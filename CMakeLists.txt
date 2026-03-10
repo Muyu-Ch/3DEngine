@@ -17,4 +17,5 @@ add_executable(3Dengine
         math/Vector3.cpp
         math/Matrix4.cpp
         render/Render.cpp
+        math/Matrix4.h
 )

@@ -8,11 +8,12 @@ Vector3::Vector3()
     this->z = 0;
 }
 
-Vector3::Vector3(float X, float Y, float Z)
+Vector3::Vector3(float X, float Y, float Z,float T)
 {
     this->x = X;
     this->y = Y;
     this->z = Z;
+    this->t = T;
 }
 
 Vector3 Vector3::operator+(const Vector3& other) const
