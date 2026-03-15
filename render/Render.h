@@ -27,7 +27,7 @@ public:
     void Project(const Vector3& point, int& screen_x, int& screen_y);
 
     // 画像素点（指定颜色）
-    void DrawPixel(int x, int y, Uint8 r = 255, Uint8 g = 0, Uint8 b = 0, Uint8 a=255);
+    void DrawPixel(int x, int y, Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a=255);
 
     // 清空窗口（黑色背景）
     void Clear();
