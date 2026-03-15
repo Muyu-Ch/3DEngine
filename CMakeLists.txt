@@ -1,21 +1,26 @@
 cmake_minimum_required(VERSION 4.1)
 project(3Dengine)
 
-# 设置 C++20 标准（强制生效，避免编译器兼容问题）
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# 包含 math 目录（让 #include "Vector3.h" 生效）
+# 包含头文件目录
 include_directories(${CMAKE_SOURCE_DIR}/math)
-# 补充包含 render 目录（Render.h 所在目录）
 include_directories(${CMAKE_SOURCE_DIR}/render)
 
-# 仅添加 .cpp 源文件（移除所有 .h 文件）
+# 查找SDL2库
+find_package(SDL2 REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
+
+# 添加源文件
 add_executable(3Dengine
         main.cpp
         math/Vector3.cpp
         math/Matrix4.cpp
         render/Render.cpp
-        math/Matrix4.h
+        render/Render.h
 )
+
+# 链接SDL2库（关键！否则编译报错）
+target_link_libraries(3Dengine ${SDL2_LIBRARIES})

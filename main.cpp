@@ -1,36 +1,32 @@
+// main.cpp（测试入口）
+#include "Render.h"
 #include <iostream>
-#include"math/Vector3.h"
-#include"math/Matrix4.h"
+
 int main()
 {
-    Vector3 v1(1,2,3);
-    Vector3 v2(4,5,6);
-    std::cout<<"v1:";
-    v1.print();
-    std::cout<<"v2:";
-    v2.print();
-    Vector3 v3=v1+v2;
-    std::cout<<"v3=v1+v2:";
-    v3.print();
-    std::cout<<std::endl;;
+    // 创建Render对象，默认800x600窗口
+    Render render(1000,1000);
 
-    Matrix4 m=Matrix4::Translate(1,1,1);//平移测试
-    std::cout<<"平移矩阵:"<<std::endl;
-    m.Print();
-    v1=m.MultiplyVector(v1);
-    std::cout<<"平移后的v1:";
-    v1.print();
-    m=Matrix4::Scale(2,2,2);
-    std::cout<<"拉伸矩阵"<<std::endl;
-    m.Print();
-    v2=m.MultiplyVector(v2);
-    std::cout<<"拉伸后的v2:";
-    v2.print();
-    m=Matrix4::RotateY(-90);
-    std::cout<<"旋转矩阵:"<<std::endl;
-    m.Print();
-    v3=m.MultiplyVector(v3);
-    std::cout<<"旋转后的v3:";
-    v3.print();
+    // 初始化（创建窗口）
+    if (!render.Init())
+    {
+        std::cerr << "Render初始化失败！" << std::endl;
+        return -1;
+    }
+
+    std::cout << "窗口已显示，按ESC键关闭..." << std::endl;
+    for (int i=0;i<1000;i++)
+    {
+        for (int j=0;j<1000;j++)
+        {
+            render.DrawPixel(i,j,255,255,255);
+        }
+
+    }
+
+    render.Present();
+
+    render.WaitQuit();
+
     return 0;
 }
