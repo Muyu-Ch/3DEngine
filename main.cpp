@@ -47,10 +47,16 @@ int main()
         Matrix4 translateToOrigin = Matrix4::Translate(-cubeCenter.x, -cubeCenter.y, -cubeCenter.z);
         // 步骤2：绕Y轴旋转矩阵（角度逐步增加）
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);
+        Matrix4 rotateX = Matrix4::RotateX(rotateAngle);
+        Matrix4 rotateZ = Matrix4::RotateZ(rotateAngle);
         // 步骤3：平移矩阵 - 把立方体移回原位置
         Matrix4 translateBack = Matrix4::Translate(cubeCenter.x, cubeCenter.y, cubeCenter.z);
 
-        Matrix4 transform = translateBack.Multiply(rotateY.Multiply(translateToOrigin));
+        Matrix4 transform = translateBack*
+                                rotateX*
+                                rotateZ*
+                                rotateY*
+                                translateToOrigin;
 
         for (size_t i=0;i<vectors.size();i++)
         {
