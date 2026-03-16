@@ -33,6 +33,7 @@ public:
     // 返回：对应的4x4旋转矩阵
     static Matrix4 RotateY(float angle);
 
+    Matrix4 Multiply(const Matrix4& other) const;
     // ============== 第三部分：核心运算（矩阵作用于坐标） ==============
     // 1. 矩阵乘以Vector3（核心！把变换应用到具体坐标上）
     // 参数：vec 要变换的三维坐标

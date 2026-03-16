@@ -52,6 +52,20 @@ Matrix4 Matrix4::RotateY(float angle)
     return M;
 }
 
+Matrix4 Matrix4::Multiply(const Matrix4& other) const {
+    Matrix4 result; // 结果矩阵初始化为单位矩阵
+    // 4x4矩阵乘法：result[i][j] = ∑(this[i][k] * other[k][j])
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            result.m[i][j] = 0.0f;
+            for (int k = 0; k < 4; k++) {
+                result.m[i][j] += this->m[i][k] * other.m[k][j];
+            }
+        }
+    }
+    return result;
+}
+
 Vector3 Matrix4::MultiplyVector(const Vector3& vec) const
 {
     float x=m[0][0]*vec.x+m[0][1]*vec.y+m[0][2]*vec.z+m[0][3];
