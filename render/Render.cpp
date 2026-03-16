@@ -59,10 +59,10 @@ void Render::Project(const Vector3& point, int& screen_x, int& screen_y)
 {
     // 1. 核心逻辑：3D坐标 → 2D屏幕坐标
     // ① 把3D点的x轴映射到屏幕x轴：窗口中心x + 3D x * 缩放系数
-    screen_x = window_width / 2 + static_cast<int>(point.x/point.z * scale);
+    screen_x = window_width / 2 + static_cast<int>((double)point.x/point.z * scale);
     // ② 把3D点的y轴映射到屏幕y轴：窗口中心y - 3D y * 缩放系数
     // （减号是因为SDL的y轴向下，而3D的y轴向上）
-    screen_y = window_height / 2 - static_cast<int>(point.y/point.z * scale);
+    screen_y = window_height / 2 - static_cast<int>((double)point.y/point.z * scale);
 
     // ③ z轴：正交投影下暂时忽略（z只影响前后遮挡，后续再加）
     // 注意：scale是你定义的缩放系数（默认50），比如3D的1个单位 = 屏幕50个像素
@@ -85,6 +85,80 @@ void Render::DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 
     // 4. 画单个像素点
     SDL_RenderDrawPoint(renderer, x, y);
+}
+
+void Render::DrawLine(int x1, int y1, int x2, int y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+    bool isOutLeft = (x1 < 0 && x2 < 0);
+    bool isOutRight = (x1 > window_width && x2 > window_width);
+    bool isOutTop = (y1 < 0 && y2 < 0);
+    bool isOutBottom = (y1 > window_height && y2 > window_height);
+    if (isOutLeft || isOutRight || isOutTop || isOutBottom)
+    {
+        return;
+    }
+
+    if (!renderer)
+    {
+        std::cout<<"渲染器未初始化！"<<std::endl;
+        return;
+    }
+
+    int delta_x = x2 - x1;
+    int delta_y = y2 - y1;
+
+    int min_x=std::min(x1,x2);
+    int max_x=std::max(x1,x2);
+    int min_y=std::min(y1,y2);
+    int max_y=std::max(y1,y2);
+
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+
+    if (abs(delta_x) >= abs(delta_y))
+    {
+        double d=(double)delta_y/delta_x;
+
+        if (min_x==x1)
+        {
+            int y;
+            for (int x=min_x; x<=max_x; x++)
+            {
+                y=round((x-min_x)*d+y1);
+                SDL_RenderDrawPoint(renderer, x, y);
+            }
+        }
+        else
+        {
+            for (int x=min_x; x<=max_x; x++)
+            {
+                int y=round((x-min_x)*d+y2);
+                SDL_RenderDrawPoint(renderer, x, y);
+            }
+        }
+    }
+
+    else
+    {
+        double d=(double)delta_x/delta_y;
+
+        if (min_y==y1)
+        {
+            int x;
+            for (int y=min_y; y<=max_y; y++)
+            {
+                x=round((y-min_y)*d+x1);
+                SDL_RenderDrawPoint(renderer, x, y);
+            }
+        }
+        else
+        {
+            for (int y=min_y; y<=max_y; y++)
+            {
+                int x=round((y-min_y)*d+x2);
+                SDL_RenderDrawPoint(renderer, x, y);
+            }
+        }
+    }
 }
 
 void Render::Clear()

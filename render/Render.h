@@ -29,6 +29,8 @@ public:
     // 画像素点（指定颜色）
     void DrawPixel(int x, int y, Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a=255);
 
+
+    void DrawLine(int x1, int y1, int x2, int y2,Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a=255);
     // 清空窗口（黑色背景）
     void Clear();
 
