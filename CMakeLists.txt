@@ -19,7 +19,7 @@ add_executable(3Dengine
         math/Vector3.cpp
         math/Matrix4.cpp
         render/Render.cpp
-        render/Render.h
+        math/Point.cpp
 )
 
 # 链接SDL2库（关键！否则编译报错）
