@@ -1,14 +1,17 @@
 // main.cpp（测试入口）
-#include "Render.h"
 #include <iostream>
 #include<vector>
-
+#include "Render.h"
 #include "Matrix4.h"
+#include "Vector3.h"
+#include "Point.h"
+#include <SDL2/SDL.h>
+
 
 int main()
 {
     // 创建Render对象，默认800x600窗口
-    Render render(1000,1000,100.0f);
+    Render render(1000,1000,200.0f);
 
     // 初始化（创建窗口）
     if (!render.Init())
@@ -31,7 +34,7 @@ int main()
         Vector3(-150,150,600)
     };
 
-    const Vector3 cubeCenter(0.0f, 0.0f, 450.0f);
+    const Vector3 Center(0.0f, 0.0f, 450.0f);
     float rotateAngle=1;
 
     while (isRunning)
@@ -44,17 +47,17 @@ int main()
                 isRunning = false;
         }
 
-        Matrix4 translateToOrigin = Matrix4::Translate(-cubeCenter.x, -cubeCenter.y, -cubeCenter.z);
+        Matrix4 translateToOrigin = Matrix4::Translate(-Center.x, -Center.y, -Center.z);
         // 步骤2：绕Y轴旋转矩阵（角度逐步增加）
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);
         Matrix4 rotateX = Matrix4::RotateX(rotateAngle);
         Matrix4 rotateZ = Matrix4::RotateZ(rotateAngle);
         // 步骤3：平移矩阵 - 把立方体移回原位置
-        Matrix4 translateBack = Matrix4::Translate(cubeCenter.x, cubeCenter.y, cubeCenter.z);
+        Matrix4 translateBack = Matrix4::Translate(Center.x, Center.y, Center.z);
 
         Matrix4 transform = translateBack*
-                                rotateX*
-                                rotateZ*
+                                //rotateX*
+                                //rotateZ*
                                 rotateY*
                                 translateToOrigin;
 
@@ -65,35 +68,37 @@ int main()
 
         render.Clear();
 
-        std::vector<std::pair<int,int>>points;
+        std::vector<Point>points;
 
         for (int i=0;i<8;i++)
         {
-            int x,y;
-            render.Project(vectors[i],x,y);
-            points.push_back(std::make_pair(x,y));
+            Point* newPoint = new Point();
+            render.Project(vectors[i],*newPoint);
+            points.push_back(*newPoint);
         }
 
-        // 画一个5x5的白色方块（方便看）
-        // for (int i=0;i<8;i++)
+
+        std::vector<std::pair<Point*,Point*>>lines={
+            std::make_pair(&points[0],&points[1]),
+        };
+
+        // for (int i=0;i<4;i++)
         // {
-        //     int x=points[i].first;
-        //     int y=points[i].second;
-        //     for (int dx = -4; dx <= 4; dx++)
-        //     {
-        //         for (int dy = -4; dy <= 4; dy++)
-        //         {
-        //             render.DrawPixel(x+dx,y+dy);
-        //         }
-        //     }
+        //     lines.push_back(std::make_pair(&points[i],&points[(i+1)%4]));
+        //     lines.push_back(std::make_pair(&points[(i+4)],&points[(i+1)%4+4]));
+        //     lines.push_back(std::make_pair(&points[i],&points[i+4]));
         // }
+        //立方体绘制
 
-        for (int i=0;i<4;i++)
+        for (size_t i=0;i<points.size();i++)
         {
-            render.DrawLine(points[i].first,points[i].second,points[(i+1)%4].first,points[(i+1)%4].second);
-            render.DrawLine(points[i+4].first,points[i+4].second,points[(i+1)%4+4].first,points[(i+1)%4+4].second);
-            render.DrawLine(points[i].first,points[i].second,points[i+4].first,points[i+4].second);
-        }
+            for (size_t j=i+1;j<points.size();j++)
+            {
+                lines.push_back(std::make_pair(&points[i],&points[j]));
+            }
+        }//立方体所有顶点相邻绘制
+
+        render.DrawLines(lines);
 
         // 5. 刷新显示（把新画面展示到窗口）
         render.Present();
