@@ -21,6 +21,24 @@ Matrix4::Matrix4()
     }
 }
 
+void Matrix4::identity()
+{
+    for (int i=0;i<4;i++)
+    {
+        for (int j=0;j<4;j++)
+        {
+            if (i==j)
+            {
+                m[i][j] = 1.0f;
+            }
+            else
+            {
+                m[i][j] = 0.0f;
+            }
+        }
+    }
+}
+
 Matrix4 Matrix4::Translate(float tx, float ty, float tz)
 {
     Matrix4 M;
@@ -45,10 +63,10 @@ Matrix4 Matrix4::RotateY(float angle)
     const float s=std::sin(radians);
     const float c=std::cos(radians);
     Matrix4 M;
-    M.m[0][0]=c;
-    M.m[0][2]=s;
-    M.m[2][0]=-s;
-    M.m[2][2]=c;
+    M.m[0][0]=s;
+    M.m[0][2]=c;
+    M.m[2][0]=-c;
+    M.m[2][2]=s;
     return M;
 }
 
@@ -58,10 +76,10 @@ Matrix4 Matrix4::RotateX(float angle)
     const float s=std::sin(radians);
     const float c=std::cos(radians);
     Matrix4 M;
-    M.m[1][1] = c;
-    M.m[1][2] = -s;
-    M.m[2][1] = s;
-    M.m[2][2] = c;
+    M.m[1][1] = -s;
+    M.m[1][2] = c;
+    M.m[2][1] = -c;
+    M.m[2][2] = -s;
     return M;
 }
 

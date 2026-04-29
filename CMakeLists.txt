@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # 包含头文件目录
 include_directories(${CMAKE_SOURCE_DIR}/math)
 include_directories(${CMAKE_SOURCE_DIR}/render)
+include_directories(${CMAKE_SOURCE_DIR}/core)
 
 # 查找SDL2库
 find_package(SDL2 REQUIRED)
@@ -20,6 +21,7 @@ add_executable(3Dengine
         math/Matrix4.cpp
         render/Render.cpp
         math/Point.cpp
+        core/Camera.cpp
 )
 
 # 链接SDL2库（关键！否则编译报错）
