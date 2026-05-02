@@ -14,11 +14,12 @@ private:
     SDL_Renderer* renderer;  // SDL渲染器指针
     int window_width;        // 窗口宽度
     int window_height;       // 窗口高度
-    float scale;             // 3D单位→屏幕像素的缩放系数
+    float fov;  // 视角
+    float scale; //像素比例尺
 
 public:
     // 构造函数
-    Render(int width = 800, int height = 600, float scale = 50.0f);
+    Render(int width = 800, int height = 600, float fov = 45.0f);
     // 析构函数（释放资源）
     ~Render();
 

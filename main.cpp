@@ -24,6 +24,7 @@ int main()
     bool isRunning = true;    // 主循环开关
     SDL_Event event; // 事件对象
 
+    //立方体八个顶点坐标
     std::vector<Vector3> vectorss={
         Vector3(150,150,300),
         Vector3(150,-150,300),
@@ -39,7 +40,7 @@ int main()
     const Vector3 Center(0.0f, 0.0f, 450.0f);
 
     //变化量
-    float rotateAngle=1;
+    float rotateAngle=45;
     float dx=1;
     Vector3 cameradz=Vector3(0,0,-1,0);
 
@@ -78,10 +79,10 @@ int main()
 
         Matrix4 transform ={
             camera.ViewM*
-            translateX*
+            //translateX*
                 translateBack*
-                    rotateX*
-                        rotateZ*
+                    //rotateX*
+                        //rotateZ*
                             rotateY*
                                 translateToOrigin
         };

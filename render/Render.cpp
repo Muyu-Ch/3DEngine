@@ -1,15 +1,16 @@
-// render.cpp 补全后
+// render.cpp
 #include "Render.h"
 #include "Point.h"
 #include<iostream>
 
-Render::Render(int width, int height, float scale)
+Render::Render(int width, int height, float fov)
 {
     window=nullptr;
     renderer=nullptr;
     window_width = width;
     window_height = height;
-    this->scale = scale;
+    this->fov = fov;
+    this->scale = 1000;
 }
 
 Render::~Render()
@@ -56,10 +57,12 @@ bool Render::Init()
 
 void Render::Project(const Vector3& point3d, Point& point2d)
 {
+    double rad = fov * 3.14159 / 180.0;
+    double scale = 1.0 / tan(rad / 2);
     if (point3d.z>0)
     {
-        point2d.x = window_width / 2 + static_cast<int>((double)point3d.x/point3d.z * scale);
-        point2d.y = window_height / 2 - static_cast<int>((double)point3d.y/point3d.z * scale);
+        point2d.x = window_width / 2 + static_cast<int>((double)point3d.x/point3d.z * scale * this->scale);
+        point2d.y = window_height / 2 - static_cast<int>((double)point3d.y/point3d.z * scale * this->scale);
     }
 }
 
