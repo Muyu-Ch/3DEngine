@@ -43,7 +43,6 @@ bool Render::Init()
         std::cerr << "窗口创建失败：" << SDL_GetError() << std::endl;
         return false;
     }
-
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer)
     {
@@ -53,6 +52,13 @@ bool Render::Init()
 
     std::cout << "窗口创建成功！" << std::endl;
     return true;
+}
+
+void Render::SetBackgroundColor(Uint8 red, Uint8 green, Uint8 blue)
+{
+    bgR=red;
+    bgG=green;
+    bgB=blue;
 }
 
 void Render::Project(const Vector3& point3d, Point& point2d)
@@ -178,7 +184,7 @@ void Render::Clear()
 {
     if (!renderer) return;
     // 设置背景色为黑色
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, bgR, bgG, bgB, 255);
     // 清空渲染器缓冲区
     SDL_RenderClear(renderer);
 }
