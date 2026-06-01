@@ -21,6 +21,7 @@ int main()
         return -1;
     }
 
+    render.SetBackgroundColor(BLUE);
     bool isRunning = true;    // 主循环开关
     SDL_Event event; // 事件对象
 
@@ -63,7 +64,7 @@ int main()
         //变化量
         rotateAngle+=1.0f;
         dx+=1.0;
-        //camera.setPosition(camera.getPosition()+cameradz);
+        camera.setPosition(camera.getPosition()+cameradz);
 
         //旋转矩阵
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);
@@ -126,7 +127,7 @@ int main()
         }
         //立方体所有顶点相邻绘制
 
-        render.DrawLines(lines);
+        render.DrawLines(lines,PINK);
 
         // 5. 刷新显示（把新画面展示到窗口）
         render.Present();
