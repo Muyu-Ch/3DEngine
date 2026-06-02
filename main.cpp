@@ -11,20 +11,20 @@
 
 int main()
 {
+    //初始化部分
     // 创建Render对象，默认800x600窗口
     Render render(1000,1000,200.0f);
-
     // 初始化（创建窗口）
     if (!render.Init())
     {
         std::cerr << "Render初始化失败！" << std::endl;
         return -1;
     }
-
-    render.SetBackgroundColor(BLUE);
+    render.SetBackgroundColor(WHITE);
     bool isRunning = true;    // 主循环开关
     SDL_Event event; // 事件对象
 
+    //对象数据初始化
     //立方体八个顶点坐标
     std::vector<Vector3> vectorss={
         Vector3(150,150,300),
@@ -36,14 +36,16 @@ int main()
         Vector3(-150,-150,600),
         Vector3(-150,150,600)
     };
-
     //立方体中心
     const Vector3 Center(0.0f, 0.0f, 450.0f);
 
     //变化量
     float rotateAngle=45;
     float dx=1;
-    Vector3 cameradz=Vector3(0,0,-1,0);
+    float cameradx=0.0;
+    float camerady=0.0;
+    float cameradz=0.0;
+    Vector3 cameraspeed=Vector3(cameradx,camerady,cameradz,0);
 
     //摄像头
     Camera camera;
@@ -51,6 +53,46 @@ int main()
 
     while (isRunning)
     {
+        const Uint8* keys=SDL_GetKeyboardState(NULL);
+        if (keys[SDL_SCANCODE_A])//X方向
+        {
+            cameradx=-3.0;
+        }
+        else if (keys[SDL_SCANCODE_D])
+        {
+            cameradx=3.0;
+        }
+        else
+        {
+            cameradx=0.0;
+        }
+
+        if (keys[SDL_SCANCODE_W])//Z方向
+        {
+            cameradz=-3.0;
+        }
+        else if (keys[SDL_SCANCODE_S])
+        {
+            cameradz=3.0;
+        }
+        else
+        {
+            cameradz=0;
+        }
+
+        if (keys[SDL_SCANCODE_Q])//Y方向
+        {
+            camerady=3.0;
+        }
+        else if (keys[SDL_SCANCODE_E])
+        {
+            camerady=-3.0;
+        }
+        else
+        {
+            camerady=0;
+        }
+
         std::vector<Vector3> vectors=vectorss;
 
         while (SDL_PollEvent(&event) != 0)
@@ -64,7 +106,8 @@ int main()
         //变化量
         rotateAngle+=1.0f;
         dx+=1.0;
-        camera.setPosition(camera.getPosition()+cameradz);
+        cameraspeed=Vector3(cameradx,camerady,cameradz,0);
+        camera.setPosition(camera.getPosition()+cameraspeed);
 
         //旋转矩阵
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);
@@ -127,7 +170,7 @@ int main()
         }
         //立方体所有顶点相邻绘制
 
-        render.DrawLines(lines,PINK);
+        render.DrawLines(lines,GREEN);
 
         // 5. 刷新显示（把新画面展示到窗口）
         render.Present();
