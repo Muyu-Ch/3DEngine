@@ -106,8 +106,8 @@ int main()
         //变化量
         rotateAngle+=1.0f;
         dx+=1.0;
-        cameraspeed=Vector3(cameradx,camerady,cameradz,0);
-        camera.setPosition(camera.getPosition()+cameraspeed);
+        cameraspeed=Vector3(cameradx,camerady,cameradz,0);//更改速度
+        camera.setPosition(camera.getPosition()+cameraspeed);//相机按照自定义方向移动
 
         //旋转矩阵
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);
