@@ -23,10 +23,11 @@ int main()
     render.SetBackgroundColor(WHITE);
     bool isRunning = true;    // 主循环开关
     SDL_Event event; // 事件对象
+    float FPS=10.0;
 
     //对象数据初始化
     //立方体八个顶点坐标
-    std::vector<Vector3> vectorss={
+    std::vector<Vector3> vertices={
         Vector3(150,150,300),
         Vector3(150,-150,300),
         Vector3 (-150,-150,300),
@@ -38,10 +39,13 @@ int main()
     };
     //立方体中心
     const Vector3 Center(0.0f, 0.0f, 450.0f);
+    float rotateAngle=45;
+    float X=0;
 
     //变化量
-    float rotateAngle=45;
-    float dx=1;
+    //速度的单位是单位/s
+    float dAngle=60.0f;
+    float dx=100.0;
     float cameradx=0.0;
     float camerady=0.0;
     float cameradz=0.0;
@@ -56,11 +60,11 @@ int main()
         const Uint8* keys=SDL_GetKeyboardState(NULL);
         if (keys[SDL_SCANCODE_A])//X方向
         {
-            cameradx=-3.0;
+            cameradx=-150.0;
         }
         else if (keys[SDL_SCANCODE_D])
         {
-            cameradx=3.0;
+            cameradx=150.0;
         }
         else
         {
@@ -69,11 +73,11 @@ int main()
 
         if (keys[SDL_SCANCODE_W])//Z方向
         {
-            cameradz=-3.0;
+            cameradz=-150.0;
         }
         else if (keys[SDL_SCANCODE_S])
         {
-            cameradz=3.0;
+            cameradz=150.0;
         }
         else
         {
@@ -82,31 +86,23 @@ int main()
 
         if (keys[SDL_SCANCODE_Q])//Y方向
         {
-            camerady=3.0;
+            camerady=150.0;
         }
         else if (keys[SDL_SCANCODE_E])
         {
-            camerady=-3.0;
+            camerady=-150.0;
         }
         else
         {
             camerady=0;
         }
 
-        std::vector<Vector3> vectors=vectorss;
-
-        while (SDL_PollEvent(&event) != 0)
-        {
-            if (event.type == SDL_QUIT) // 点击窗口关闭按钮
-                isRunning = false;
-            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) // 按ESC
-                isRunning = false;
-        }
+        std::vector<Vector3> vectors=vertices;
 
         //变化量
-        rotateAngle+=1.0f;
-        dx+=1.0;
-        cameraspeed=Vector3(cameradx,camerady,cameradz,0);//更改速度
+        rotateAngle+=dAngle/FPS;
+        X+=dx/FPS;
+        cameraspeed=Vector3(cameradx/FPS,camerady/FPS,cameradz/FPS,0);//更改速度
         camera.setPosition(camera.getPosition()+cameraspeed);//相机按照自定义方向移动
 
         //旋转矩阵
@@ -115,7 +111,7 @@ int main()
         Matrix4 rotateZ = Matrix4::RotateZ(rotateAngle);
 
         //平移矩阵
-        Matrix4 translateX=Matrix4::Translate(dx,0,0);
+        Matrix4 translateX=Matrix4::Translate(X,0,0);
 
         //复原矩阵
         Matrix4 translateToOrigin = Matrix4::Translate(-Center.x, -Center.y, -Center.z);
@@ -137,8 +133,6 @@ int main()
             vectors[i]=transform.MultiplyVector(vectors[i]);
         }
 
-        render.Clear();
-
         std::vector<Point>points;
 
         for (int i=0;i<8;i++)
@@ -149,9 +143,7 @@ int main()
         }
 
 
-        std::vector<std::pair<Point*,Point*>>lines={
-            std::make_pair(&points[0],&points[1]),
-        };
+        std::vector<std::pair<Point*,Point*>>edges;
 
          // for (int i=0;i<4;i++)
          // {
@@ -165,18 +157,27 @@ int main()
          {
              for (size_t j=i+1;j<points.size();j++)
              {
-                 lines.push_back(std::make_pair(&points[i],&points[j]));
+                 edges.emplace_back(&points[i],&points[j]);
              }
         }
         //立方体所有顶点相邻绘制
 
-        render.DrawLines(lines,GREEN);
-
-        // 5. 刷新显示（把新画面展示到窗口）
+        //绘制部分
+        render.Clear();
+        render.DrawLines(edges,GREEN);
         render.Present();
 
+        //退出引擎
+        while (SDL_PollEvent(&event) != 0)
+        {
+            if (event.type == SDL_QUIT) // 点击窗口关闭按钮
+                isRunning = false;
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) // 按ESC
+                isRunning = false;
+        }
+
         // 控制帧率（约60帧/秒，避免画面太快）
-        SDL_Delay(16);
+        SDL_Delay(1000/FPS);
     }
 
     std::cout<<"程序退出"<<std::endl;
