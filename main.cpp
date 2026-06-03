@@ -13,7 +13,7 @@ int main()
 {
     //初始化部分
     // 创建Render对象，默认800x600窗口
-    Render render(1000,1000,200.0f);
+    Render render(1000,1000,100.0f);
     // 初始化（创建窗口）
     if (!render.Init())
     {
@@ -23,22 +23,23 @@ int main()
     render.SetBackgroundColor(WHITE);
     bool isRunning = true;    // 主循环开关
     SDL_Event event; // 事件对象
-    float FPS=10.0;
+    float FPS=24.0;
 
     //对象数据初始化
     //立方体八个顶点坐标
     std::vector<Vector3> vertices={
-        Vector3(150,150,300),
-        Vector3(150,-150,300),
-        Vector3 (-150,-150,300),
-        Vector3(-150,150,300),
-        Vector3(150,150,600),
-        Vector3(150,-150,600),
-        Vector3(-150,-150,600),
-        Vector3(-150,150,600)
+        Vector3(150,150,500),
+        Vector3(150,-150,500),
+        Vector3 (-150,-150,500),
+        Vector3(-150,150,500),
+        Vector3(150,150,800),
+        Vector3(150,-150,800),
+        Vector3(-150,-150,800),
+        Vector3(-150,150,800)
     };
     //立方体中心
-    const Vector3 Center(0.0f, 0.0f, 450.0f);
+    Vector3 Center=Vector3();
+    Center.center(vertices);
     float rotateAngle=45;
     float X=0;
 
@@ -60,11 +61,11 @@ int main()
         const Uint8* keys=SDL_GetKeyboardState(NULL);
         if (keys[SDL_SCANCODE_A])//X方向
         {
-            cameradx=-150.0;
+            cameradx=150.0;
         }
         else if (keys[SDL_SCANCODE_D])
         {
-            cameradx=150.0;
+            cameradx=-150.0;
         }
         else
         {
@@ -164,7 +165,7 @@ int main()
 
         //绘制部分
         render.Clear();
-        render.DrawLines(edges,GREEN);
+        render.DrawLines(edges,BLACK);
         render.Present();
 
         //退出引擎
@@ -176,7 +177,7 @@ int main()
                 isRunning = false;
         }
 
-        // 控制帧率（约60帧/秒，避免画面太快）
+        // 控制帧率
         SDL_Delay(1000/FPS);
     }
 

@@ -3,7 +3,7 @@
 #define INC_3DENGINE_VECTOR3_H
 
 #include<cmath>
-
+#include<vector>
 class Vector3
 {
 public:
@@ -32,6 +32,8 @@ public:
     Vector3 cross(const Vector3& other) const;
 
     void print()const;
+
+    void center(std::vector<Vector3>points);
 };
 
 

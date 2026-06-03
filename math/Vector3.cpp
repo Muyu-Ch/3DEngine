@@ -64,3 +64,18 @@ void Vector3::print() const
 {
     std::cout<<"("<<x<<","<<y<<","<<z<<","<<t<<")"<<std::endl;
 }
+
+void Vector3::center(std::vector<Vector3>points)
+{
+    Vector3 center;
+    for (size_t i=0; i<points.size(); i++)
+    {
+        center=center+points[i];
+    }
+    float nums=points.size();
+    center=center*(1/nums);
+    this->x=center.x;
+    this->y=center.y;
+    this->z=center.z;
+    this->t=0;
+}
