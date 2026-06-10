@@ -49,7 +49,6 @@ int main()
     float dx=100.0;
     float cameraUpangle=0.0;
     float cameraWaveangle=0.0;
-    Vector3 cameraSpeed=Vector3(0.0,0.0,0.0,0);
     Matrix4 cameraWave = Matrix4::RotateY(cameraWaveangle);
 
     //摄像头位置+方向
@@ -65,26 +64,25 @@ int main()
     {
         const Uint8* keys=SDL_GetKeyboardState(NULL);
 
-        if (keys[SDL_SCANCODE_A])//X方向
-        {cameraSpeed.x=-150.0;}
-        else if (keys[SDL_SCANCODE_D])
-        {cameraSpeed.x=150.0;}
-        else
-        {cameraSpeed.x=0.0;}
+        // 相机本地移动方向（相对于镜头朝向）
+        float moveForward = 0;   // W/S：前/后
+        float moveRight   = 0;   // A/D：左/右
+        float moveUp      = 0;   // Q/E：上/下
 
-        if (keys[SDL_SCANCODE_W])//Z方向
-        {cameraSpeed.z=150.0;}
+        if (keys[SDL_SCANCODE_W])
+            moveForward = 150.0;
         else if (keys[SDL_SCANCODE_S])
-        {cameraSpeed.z=-150.0;}
-        else
-        {cameraSpeed.z=0;}
+            moveForward = -150.0;
 
-        if (keys[SDL_SCANCODE_Q])//Y方向
-        {cameraSpeed.y=150.0;}
+        if (keys[SDL_SCANCODE_D])
+            moveRight = 150.0;
+        else if (keys[SDL_SCANCODE_A])
+            moveRight = -150.0;
+
+        if (keys[SDL_SCANCODE_Q])
+            moveUp = 150.0;
         else if (keys[SDL_SCANCODE_E])
-        {cameraSpeed.y=-150.0;}
-        else
-        {cameraSpeed.y=0;}
+            moveUp = -150.0;
 
         if (keys[SDL_SCANCODE_I])//抬头
         {cameraUpangle=30.0;}
@@ -106,13 +104,21 @@ int main()
         rotateAngle+=dAngle/FPS;
         X+=dx/FPS;
 
-        //相机变化量
-        camera.setPosition(camera.getPosition()+cameraSpeed*(1/FPS));//相机按照自定义方向移动
-
         cameraWaveangle*=(1/FPS);
         cameraWave = Matrix4::RotateY(cameraWaveangle);
         cameraFount=cameraWave.MultiplyVector(cameraFount);
         camera.setFront(cameraFount);
+
+        // 相机本地方向移动：将移动量投影到镜头的右/前/上方向
+        Vector3 camRight   = camera.Up.cross(camera.Front).normalize();   // 镜头右方向
+        Vector3 camForward = camera.Front.normalize();                    // 镜头前方向
+        Vector3 camUp      = camera.Up.normalize();                       // 镜头上方向
+
+        Vector3 movement = camRight   * (moveRight / FPS)
+                         + camForward * (moveForward / FPS)
+                         + camUp      * (moveUp / FPS);
+
+        camera.setPosition(camera.getPosition() + movement);
 
         //旋转矩阵
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);
