@@ -66,23 +66,23 @@ int main()
         const Uint8* keys=SDL_GetKeyboardState(NULL);
 
         if (keys[SDL_SCANCODE_A])//X方向
-        {cameraSpeed.x=-50.0;}
+        {cameraSpeed.x=-150.0;}
         else if (keys[SDL_SCANCODE_D])
-        {cameraSpeed.x=50.0;}
+        {cameraSpeed.x=150.0;}
         else
         {cameraSpeed.x=0.0;}
 
         if (keys[SDL_SCANCODE_W])//Z方向
-        {cameraSpeed.z=50.0;}
+        {cameraSpeed.z=150.0;}
         else if (keys[SDL_SCANCODE_S])
-        {cameraSpeed.z=-50.0;}
+        {cameraSpeed.z=-150.0;}
         else
         {cameraSpeed.z=0;}
 
         if (keys[SDL_SCANCODE_Q])//Y方向
-        {cameraSpeed.y=50.0;}
+        {cameraSpeed.y=150.0;}
         else if (keys[SDL_SCANCODE_E])
-        {cameraSpeed.y=-50.0;}
+        {cameraSpeed.y=-150.0;}
         else
         {cameraSpeed.y=0;}
 
@@ -91,7 +91,7 @@ int main()
         else if (keys[SDL_SCANCODE_K])
         {cameraUpangle=-30.0;}
         else
-        {cameraWaveangle=0;}
+        {cameraUpangle=0;}
 
         if (keys[SDL_SCANCODE_J])//Y方向
         {cameraWaveangle=30.0;}
@@ -107,10 +107,12 @@ int main()
         X+=dx/FPS;
 
         //相机变化量
-        camera.setPosition(camera.getPosition()+cameraSpeed);//相机按照自定义方向移动
+        camera.setPosition(camera.getPosition()+cameraSpeed*(1/FPS));//相机按照自定义方向移动
 
-        //cameraFount=cameraWave.MultiplyVector(cameraFount);
-        //camera.setFront(cameraFount);
+        cameraWaveangle*=(1/FPS);
+        cameraWave = Matrix4::RotateY(cameraWaveangle);
+        cameraFount=cameraWave.MultiplyVector(cameraFount);
+        camera.setFront(cameraFount);
 
         //旋转矩阵
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);
@@ -130,7 +132,7 @@ int main()
                 translateBack*
                     //rotateX*
                         //rotateZ*
-                            rotateY*
+                            //rotateY*
                                 translateToOrigin
         };
 

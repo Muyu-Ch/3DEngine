@@ -63,10 +63,10 @@ Matrix4 Matrix4::RotateY(float angle)
     const float s=std::sin(radians);
     const float c=std::cos(radians);
     Matrix4 M;
-    M.m[0][0]=s;
-    M.m[0][2]=c;
-    M.m[2][0]=-c;
-    M.m[2][2]=s;
+    M.m[0][0]=c;
+    M.m[0][2]=s;
+    M.m[2][0]=-s;
+    M.m[2][2]=c;
     return M;
 }
 
