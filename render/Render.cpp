@@ -65,10 +65,82 @@ void Render::Project(const Vector3& point3d, Point& point2d)
 {
     double rad = fov * 3.14159 / 180.0;
     double scale = 1.0 / tan(rad / 2);
-    if (point3d.z>0)
+    if (point3d.z >= NEAR_PLANE)
     {
         point2d.x = window_width / 2 + static_cast<int>((double)point3d.x/point3d.z * scale * this->scale);
         point2d.y = window_height / 2 - static_cast<int>((double)point3d.y/point3d.z * scale * this->scale);
+    }
+    else
+    {
+        // 顶点在近平面后方，设为无效坐标（后续裁剪应避免走到这里）
+        point2d.x = -10000;
+        point2d.y = -10000;
+    }
+}
+
+bool Render::ClipSegmentToNearPlane(Vector3& v1, Vector3& v2)
+{
+    bool v1_inside = v1.z >= NEAR_PLANE;
+    bool v2_inside = v2.z >= NEAR_PLANE;
+
+    // 情况1：两端点都在近平面之前 —— 无需裁剪
+    if (v1_inside && v2_inside)
+    {
+        return true;
+    }
+
+    // 情况2：两端点都在近平面之后 —— 完全不可见，丢弃
+    if (!v1_inside && !v2_inside)
+    {
+        return false;
+    }
+
+    // 情况3：一个在前一个在后 —— 需要裁剪
+    // 将 v1 统一为"内侧"（在前面的那个）
+    if (!v1_inside)
+    {
+        std::swap(v1, v2);
+        // 现在 v1 在近平面之前，v2 在近平面之后
+    }
+
+    // 计算插值参数 t：使得 v1.z + t * (v2.z - v1.z) = NEAR_PLANE
+    float t = (NEAR_PLANE - v1.z) / (v2.z - v1.z);
+
+    // 在近平面处裁剪 v2
+    v2.x = v1.x + t * (v2.x - v1.x);
+    v2.y = v1.y + t * (v2.y - v1.y);
+    v2.z = NEAR_PLANE;
+    // v2.t (w分量) 也保持线性插值
+    v2.t = v1.t + t * (v2.t - v1.t);
+
+    return true;
+}
+
+void Render::Draw3DLine(Vector3 v1, Vector3 v2,
+    Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+    // 先对3D线段进行近平面裁剪
+    if (!ClipSegmentToNearPlane(v1, v2))
+    {
+        return;  // 整条线段在近平面之后，不绘制
+    }
+
+    // 投影到2D屏幕坐标
+    Point p1, p2;
+    Project(v1, p1);
+    Project(v2, p2);
+
+    // 绘制2D线段
+    DrawLine(p1, p2, r, g, b, a);
+}
+
+void Render::Draw3DLines(
+    const std::vector<std::pair<Vector3, Vector3>>& lines,
+    Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+    for (size_t i = 0; i < lines.size(); i++)
+    {
+        Draw3DLine(lines[i].first, lines[i].second, r, g, b, a);
     }
 }
 
@@ -90,6 +162,74 @@ void Render::DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     SDL_RenderDrawPoint(renderer, x, y);
 }
 
+// Cohen-Sutherland 线段裁剪：将线段裁剪到屏幕矩形内
+// 返回值：true = 有可见部分，false = 完全不可见
+static bool CohenSutherlandClip(int& x1, int& y1, int& x2, int& y2,
+                                int winW, int winH)
+{
+    const int INSIDE = 0;
+    const int LEFT   = 1;
+    const int RIGHT  = 2;
+    const int BOTTOM = 4;
+    const int TOP    = 8;
+
+    auto outCode = [winW, winH](int x, int y) {
+        int code = INSIDE;
+        if (x < 0)       code |= LEFT;
+        if (x >= winW)   code |= RIGHT;
+        if (y < 0)       code |= TOP;
+        if (y >= winH)   code |= BOTTOM;
+        return code;
+    };
+
+    int code1 = outCode(x1, y1);
+    int code2 = outCode(x2, y2);
+
+    while (true)
+    {
+        // 两端都在窗口内
+        if ((code1 | code2) == 0) return true;
+        // 两端都在窗口外且在同一侧 —— 完全不可见
+        if (code1 & code2) return false;
+
+        // 选一个在窗口外的端点
+        int codeOut = (code1 != 0) ? code1 : code2;
+        int x=0, y=0;
+
+        if (codeOut & TOP)
+        {
+            x = x1 + (int)((long long)(x2 - x1) * (0 - y1) / (y2 - y1));
+            y = 0;
+        }
+        else if (codeOut & BOTTOM)
+        {
+            x = x1 + (int)((long long)(x2 - x1) * (winH - 1 - y1) / (y2 - y1));
+            y = winH - 1;
+        }
+        else if (codeOut & RIGHT)
+        {
+            y = y1 + (int)((long long)(y2 - y1) * (winW - 1 - x1) / (x2 - x1));
+            x = winW - 1;
+        }
+        else if (codeOut & LEFT)
+        {
+            y = y1 + (int)((long long)(y2 - y1) * (0 - x1) / (x2 - x1));
+            x = 0;
+        }
+
+        if (codeOut == code1)
+        {
+            x1 = x; y1 = y;
+            code1 = outCode(x1, y1);
+        }
+        else
+        {
+            x2 = x; y2 = y;
+            code2 = outCode(x2, y2);
+        }
+    }
+}
+
 void Render::DrawLine(Point point1, Point point2, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     int x1=point1.x;
@@ -97,13 +237,10 @@ void Render::DrawLine(Point point1, Point point2, Uint8 r, Uint8 g, Uint8 b, Uin
     int y1=point1.y;
     int y2=point2.y;
 
-    bool isOutLeft = (x1 < 0 && x2 < 0);
-    bool isOutRight = (x1 > window_width && x2 > window_width);
-    bool isOutTop = (y1 < 0 && y2 < 0);
-    bool isOutBottom = (y1 > window_height && y2 > window_height);
-    if (isOutLeft || isOutRight || isOutTop || isOutBottom)
+    // 使用 Cohen-Sutherland 算法将线段裁剪到屏幕范围内
+    if (!CohenSutherlandClip(x1, y1, x2, y2, window_width, window_height))
     {
-        return;
+        return;  // 线段完全在屏幕外，不绘制
     }
 
     if (!renderer)

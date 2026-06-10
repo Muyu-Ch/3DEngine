@@ -50,6 +50,8 @@ private:
     Uint8 bgB=0;
 
 public:
+    // 近裁剪面距离：任何 z < NEAR_PLANE 的点都在相机后方，需要被裁剪
+    static constexpr float NEAR_PLANE = 0.1f;
     // 构造函数
     Render(int width = 800, int height = 600, float fov = 45.0f);
     // 析构函数（释放资源）
@@ -61,8 +63,22 @@ public:
     //背景颜色设置
     void SetBackgroundColor(Uint8 red=0, Uint8 green=0, Uint8 blue=0);
 
-    // 3D坐标→2D屏幕坐标（正交投影）
+    // 3D坐标→2D屏幕坐标（透视投影）
     void Project(const Vector3& point3d, Point& points2d);
+
+    // 对一条3D线段进行近裁剪面裁剪
+    // 返回值：true = 线段可见（至少部分在近平面之前），false = 整条线段在近平面之后
+    // 注意：会修改传入的 v1, v2（裁剪后的新端点）
+    bool ClipSegmentToNearPlane(Vector3& v1, Vector3& v2);
+
+    // 绘制一条3D线段（内部完成裁剪+投影+绘制）
+    void Draw3DLine(Vector3 v1, Vector3 v2,
+        Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a = 255);
+
+    // 绘制多条3D线段
+    void Draw3DLines(
+        const std::vector<std::pair<Vector3, Vector3>>& lines,
+        Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a = 255);
 
     // 画像素点（指定颜色）
     void DrawPixel(int x, int y,

@@ -23,7 +23,7 @@ int main()
     render.SetBackgroundColor(WHITE);
     bool isRunning = true;    // 主循环开关
     SDL_Event event; // 事件对象
-    float FPS=24.0;
+    float FPS=60.0;
 
     //对象数据初始化
     //立方体八个顶点坐标
@@ -47,64 +47,70 @@ int main()
     //速度的单位是单位/s
     float dAngle=60.0f;
     float dx=100.0;
-    float cameradx=0.0;
-    float camerady=0.0;
-    float cameradz=0.0;
-    Vector3 cameraspeed=Vector3(cameradx,camerady,cameradz,0);
+    float cameraUpangle=0.0;
+    float cameraWaveangle=0.0;
+    Vector3 cameraSpeed=Vector3(0.0,0.0,0.0,0);
+    Matrix4 cameraWave = Matrix4::RotateY(cameraWaveangle);
 
-    //摄像头
+    //摄像头位置+方向
+    Vector3 cameraPosition=Vector3(0,0,0,1);
+    Vector3 cameraFount = Vector3(0.0f, 0.0f, 1.0f, 0.0f);
+
+    //摄像头实体
     Camera camera;
-    camera.setPosition(Vector3(0.0f, 0.0f, 0.0f, 1.0f));
+    camera.setPosition(cameraPosition);
+    camera.setFront(cameraFount);
 
     while (isRunning)
     {
         const Uint8* keys=SDL_GetKeyboardState(NULL);
+
         if (keys[SDL_SCANCODE_A])//X方向
-        {
-            cameradx=150.0;
-        }
+        {cameraSpeed.x=-50.0;}
         else if (keys[SDL_SCANCODE_D])
-        {
-            cameradx=-150.0;
-        }
+        {cameraSpeed.x=50.0;}
         else
-        {
-            cameradx=0.0;
-        }
+        {cameraSpeed.x=0.0;}
 
         if (keys[SDL_SCANCODE_W])//Z方向
-        {
-            cameradz=-150.0;
-        }
+        {cameraSpeed.z=50.0;}
         else if (keys[SDL_SCANCODE_S])
-        {
-            cameradz=150.0;
-        }
+        {cameraSpeed.z=-50.0;}
         else
-        {
-            cameradz=0;
-        }
+        {cameraSpeed.z=0;}
 
         if (keys[SDL_SCANCODE_Q])//Y方向
-        {
-            camerady=150.0;
-        }
+        {cameraSpeed.y=50.0;}
         else if (keys[SDL_SCANCODE_E])
-        {
-            camerady=-150.0;
-        }
+        {cameraSpeed.y=-50.0;}
         else
-        {
-            camerady=0;
-        }
+        {cameraSpeed.y=0;}
 
+        if (keys[SDL_SCANCODE_I])//抬头
+        {cameraUpangle=30.0;}
+        else if (keys[SDL_SCANCODE_K])
+        {cameraUpangle=-30.0;}
+        else
+        {cameraWaveangle=0;}
+
+        if (keys[SDL_SCANCODE_J])//Y方向
+        {cameraWaveangle=30.0;}
+        else if (keys[SDL_SCANCODE_L])
+        {cameraWaveangle=-30.0;}
+        else
+        {cameraWaveangle=0;}
         std::vector<Vector3> vectors=vertices;
 
-        //变化量
+
+        //物体变化量
         rotateAngle+=dAngle/FPS;
         X+=dx/FPS;
-        cameraspeed=Vector3(cameradx/FPS,camerady/FPS,cameradz/FPS,0);//更改速度
-        camera.setPosition(camera.getPosition()+cameraspeed);//相机按照自定义方向移动
+
+        //相机变化量
+        camera.setPosition(camera.getPosition()+cameraSpeed);//相机按照自定义方向移动
+
+        //cameraFount=cameraWave.MultiplyVector(cameraFount);
+        //camera.setFront(cameraFount);
 
         //旋转矩阵
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);
@@ -134,38 +140,19 @@ int main()
             vectors[i]=transform.MultiplyVector(vectors[i]);
         }
 
-        std::vector<Point>points;
-
-        for (int i=0;i<8;i++)
+        // 使用3D线段构建边（所有顶点两两连线 = 立方体所有边+对角线）
+        std::vector<std::pair<Vector3, Vector3>> edges3D;
+        for (size_t i = 0; i < vectors.size(); i++)
         {
-            Point* newPoint = new Point();
-            render.Project(vectors[i],*newPoint);
-            points.push_back(*newPoint);
+            for (size_t j = i + 1; j < vectors.size(); j++)
+            {
+                edges3D.emplace_back(vectors[i], vectors[j]);
+            }
         }
 
-
-        std::vector<std::pair<Point*,Point*>>edges;
-
-         // for (int i=0;i<4;i++)
-         // {
-         //     lines.push_back(std::make_pair(&points[i],&points[(i+1)%4]));
-         //     lines.push_back(std::make_pair(&points[(i+4)],&points[(i+1)%4+4]));
-         //     lines.push_back(std::make_pair(&points[i],&points[i+4]));
-         // }
-        //立方体绘制
-
-        for (size_t i=0;i<points.size();i++)
-         {
-             for (size_t j=i+1;j<points.size();j++)
-             {
-                 edges.emplace_back(&points[i],&points[j]);
-             }
-        }
-        //立方体所有顶点相邻绘制
-
-        //绘制部分
+        // 绘制部分（Draw3DLines 内部完成近平面裁剪 → 投影 → 2D绘制）
         render.Clear();
-        render.DrawLines(edges,BLACK);
+        render.Draw3DLines(edges3D, BLACK);
         render.Present();
 
         //退出引擎
