@@ -76,10 +76,10 @@ Matrix4 Matrix4::RotateX(float angle)
     const float s=std::sin(radians);
     const float c=std::cos(radians);
     Matrix4 M;
-    M.m[1][1] = -s;
-    M.m[1][2] = c;
-    M.m[2][1] = -c;
-    M.m[2][2] = -s;
+    M.m[1][1] = c;
+    M.m[1][2] = -s;
+    M.m[2][1] = s;
+    M.m[2][2] = c;
     return M;
 }
 
@@ -90,8 +90,8 @@ Matrix4 Matrix4::RotateZ(float angle)
     const float c=std::cos(radians);
     Matrix4 M;
     M.m[0][0] = c;
-    M.m[0][1] = s;
-    M.m[1][0] = -s;
+    M.m[0][1] = -s;
+    M.m[1][0] = s;
     M.m[1][1] = c;
     return M;
 }
