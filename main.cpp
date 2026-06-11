@@ -20,7 +20,7 @@ int main()
         std::cerr << "Render初始化失败！" << std::endl;
         return -1;
     }
-    render.SetBackgroundColor(WHITE);
+    render.SetBackgroundColor(BLACK);
     bool isRunning = true;    // 主循环开关
     SDL_Event event; // 事件对象
     float FPS=60.0;
@@ -166,9 +166,61 @@ int main()
             }
         }
 
-        // 绘制部分（Draw3DLines 内部完成近平面裁剪 → 投影 → 2D绘制）
+        // ========== 绘制部分 ==========
         render.Clear();
-        render.Draw3DLines(edges3D, BLACK);
+
+        // 1. 地面网格（XZ 平面，Y=0，黄色，每 50 单位一条，中心在原点）
+        const float GRID_SIZE = 2500.0f;
+        const float GRID_STEP = 50.0f;
+        std::vector<std::pair<Vector3, Vector3>> gridEdges;
+
+        // 平行于 X 轴的线（在不同 Z 位置）
+        for (float z = -GRID_SIZE; z <= GRID_SIZE; z += GRID_STEP)
+        {
+            Vector3 v1(-GRID_SIZE, 0.0f, z, 1.0f);
+            Vector3 v2( GRID_SIZE, 0.0f, z, 1.0f);
+            v1 = camera.ViewM.MultiplyVector(v1);
+            v2 = camera.ViewM.MultiplyVector(v2);
+            gridEdges.emplace_back(v1, v2);
+        }
+
+        // 平行于 Z 轴的线（在不同 X 位置）
+        for (float x = -GRID_SIZE; x <= GRID_SIZE; x += GRID_STEP)
+        {
+            Vector3 v1(x, 0.0f, -GRID_SIZE, 1.0f);
+            Vector3 v2(x, 0.0f,  GRID_SIZE, 1.0f);
+            v1 = camera.ViewM.MultiplyVector(v1);
+            v2 = camera.ViewM.MultiplyVector(v2);
+            gridEdges.emplace_back(v1, v2);
+        }
+        render.Draw3DLines(gridEdges, YELLOW);
+
+        // 2. 坐标轴：X=红，Y=绿，Z=蓝
+        {
+            Vector3 v1(0.0f, 0.0f, 0.0f, 1.0f);
+            Vector3 v2(GRID_SIZE, 0.0f, 0.0f, 1.0f);
+            v1 = camera.ViewM.MultiplyVector(v1);
+            v2 = camera.ViewM.MultiplyVector(v2);
+            render.Draw3DLine(v1, v2, RED);
+        }
+        {
+            Vector3 v1(0.0f, 0.0f, 0.0f, 1.0f);
+            Vector3 v2(0.0f, GRID_SIZE, 0.0f, 1.0f);
+            v1 = camera.ViewM.MultiplyVector(v1);
+            v2 = camera.ViewM.MultiplyVector(v2);
+            render.Draw3DLine(v1, v2, GREEN);
+        }
+        {
+            Vector3 v1(0.0f, 0.0f, 0.0f, 1.0f);
+            Vector3 v2(0.0f, 0.0f, GRID_SIZE, 1.0f);
+            v1 = camera.ViewM.MultiplyVector(v1);
+            v2 = camera.ViewM.MultiplyVector(v2);
+            render.Draw3DLine(v1, v2, BLUE);
+        }
+
+        // 3. 立方体
+        render.Draw3DLines(edges3D,WHITE);
+
         render.Present();
 
         //退出引擎
