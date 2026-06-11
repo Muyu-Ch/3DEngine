@@ -65,10 +65,7 @@ int main()
     {
         const Uint8* keys=SDL_GetKeyboardState(NULL);
 
-        // 相机本地移动方向（相对于镜头朝向）
-        float moveForward = 0;   // W/S：前/后
-        float moveRight   = 0;   // A/D：左/右
-        float moveUp      = 0;   // Q/E：上/下
+        camera.speed=Vector3(0,0,0,0);
 
         if (keys[SDL_SCANCODE_1])
             speed=100;
@@ -89,19 +86,19 @@ int main()
             speed-=50;
 
         if (keys[SDL_SCANCODE_W])
-            moveForward = speed;
+            camera.speed.z = speed;
         else if (keys[SDL_SCANCODE_S])
-            moveForward = -speed;
+            camera.speed.z = -speed;
 
         if (keys[SDL_SCANCODE_D])
-            moveRight = speed;
+            camera.speed.x = speed;
         else if (keys[SDL_SCANCODE_A])
-            moveRight = -speed;
+            camera.speed.x = -speed;
 
         if (keys[SDL_SCANCODE_Q])
-            moveUp = speed;
+            camera.speed.y = speed;
         else if (keys[SDL_SCANCODE_E])
-            moveUp = -speed;
+            camera.speed.y = -speed;
 
         if (keys[SDL_SCANCODE_K])//低头
         {cameraUpangle=60.0;}
@@ -136,16 +133,7 @@ int main()
 
         camera.setFront(cameraFount);
 
-        // 相机本地方向移动：将移动量投影到镜头的右/前/上方向
-        Vector3 camRight   = camera.Up.cross(camera.Front).normalize();   // 镜头右方向
-        Vector3 camForward = camera.Front.normalize();                    // 镜头前方向
-        Vector3 camUp      = camera.Up.normalize();                       // 镜头上方向
-
-        Vector3 movement = camRight   * (moveRight / FPS)
-                         + camForward * (moveForward / FPS)
-                         + camUp      * (moveUp / FPS);
-
-        camera.setPosition(camera.getPosition() + movement);
+        camera.move(FPS);
 
         //旋转矩阵
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);

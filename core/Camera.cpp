@@ -62,6 +62,20 @@ void Camera::updateViewM() {
     ViewM.m[3][3] = 1.0f;
 }
 
+void Camera::move(int FPS)
+{
+    // 相机本地方向移动：将移动量投影到镜头的右/前/上方向
+    Vector3 camRight   = Up.cross(Front).normalize();   // 镜头右方向
+    Vector3 camForward = Front.normalize();                    // 镜头前方向
+    Vector3 camUp      = Up.normalize();                       // 镜头上方向
+
+    Vector3 movement = camRight   * (speed.x / FPS)
+                     + camForward * (speed.z / FPS)
+                     + camUp      * (speed.y / FPS);
+
+    setPosition(getPosition() + movement);
+}
+
 Vector3 Camera::getPosition()
 {
     return Position;

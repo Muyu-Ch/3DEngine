@@ -10,6 +10,7 @@ public:
     Vector3 Front;     // 相机朝向
     Vector3 Up;        // 相机上方向
     Matrix4 ViewM;     // 视图矩阵（设为public方便访问）
+    Vector3 speed;
 
     // 构造函数
     Camera();
@@ -21,6 +22,8 @@ public:
     void setFront(const Vector3& front);
     // 计算视图矩阵（核心：适配你的行优先矩阵+右手系）
     void updateViewM();
+
+    void move(int FPS);
 
     Vector3 getPosition();
 
