@@ -84,16 +84,16 @@ int main()
         else if (keys[SDL_SCANCODE_E])
             moveUp = -150.0;
 
-        if (keys[SDL_SCANCODE_I])//抬头
+        if (keys[SDL_SCANCODE_K])//低头
         {cameraUpangle=30.0;}
-        else if (keys[SDL_SCANCODE_K])
+        else if (keys[SDL_SCANCODE_I])//抬头
         {cameraUpangle=-30.0;}
         else
         {cameraUpangle=0;}
 
-        if (keys[SDL_SCANCODE_J])//Y方向
+        if (keys[SDL_SCANCODE_L])//Y方向
         {cameraWaveangle=30.0;}
-        else if (keys[SDL_SCANCODE_L])
+        else if (keys[SDL_SCANCODE_J])
         {cameraWaveangle=-30.0;}
         else
         {cameraWaveangle=0;}
@@ -104,9 +104,17 @@ int main()
         rotateAngle+=dAngle/FPS;
         X+=dx/FPS;
 
-        cameraWaveangle*=(1/FPS);
+        // 水平旋转（Yaw）：绕世界 Y 轴旋转镜头朝向
+        cameraWaveangle *= (1/FPS);
         cameraWave = Matrix4::RotateY(cameraWaveangle);
-        cameraFount=cameraWave.MultiplyVector(cameraFount);
+        cameraFount = cameraWave.MultiplyVector(cameraFount);
+
+        // 垂直旋转（Pitch）：绕镜头的右轴旋转镜头朝向
+        cameraUpangle *= (1/FPS);
+        Vector3 rightAxis = camera.Up.cross(cameraFount).normalize();
+        Matrix4 pitchMatrix = Matrix4::RotateAxis(rightAxis, cameraUpangle);
+        cameraFount = pitchMatrix.MultiplyVector(cameraFount);
+
         camera.setFront(cameraFount);
 
         // 相机本地方向移动：将移动量投影到镜头的右/前/上方向

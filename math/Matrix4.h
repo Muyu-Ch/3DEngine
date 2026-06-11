@@ -38,6 +38,8 @@ public:
     static Matrix4 RotateX(float angle);
     // 绕Z轴旋转矩阵
     static Matrix4 RotateZ(float angle);
+    // 绕任意轴旋转矩阵
+    static Matrix4 RotateAxis(const Vector3& axis, float angle);
 
     Matrix4 Multiply(const Matrix4& other) const;
 

@@ -96,6 +96,37 @@ Matrix4 Matrix4::RotateZ(float angle)
     return M;
 }
 
+Matrix4 Matrix4::RotateAxis(const Vector3& axis, float angle)
+{
+    Vector3 k = axis.normalize();
+    const float radians = angle / 180.0f * 3.1415926f;
+    const float s = std::sin(radians);
+    const float c = std::cos(radians);
+    const float t = 1.0f - c;
+
+    Matrix4 M;
+
+    // Rodrigues 旋转公式构造旋转矩阵（行优先，列向量乘法）
+    M.m[0][0] = c + k.x * k.x * t;
+    M.m[0][1] = k.x * k.y * t - k.z * s;
+    M.m[0][2] = k.x * k.z * t + k.y * s;
+    M.m[0][3] = 0.0f;
+
+    M.m[1][0] = k.y * k.x * t + k.z * s;
+    M.m[1][1] = c + k.y * k.y * t;
+    M.m[1][2] = k.y * k.z * t - k.x * s;
+    M.m[1][3] = 0.0f;
+
+    M.m[2][0] = k.z * k.x * t - k.y * s;
+    M.m[2][1] = k.z * k.y * t + k.x * s;
+    M.m[2][2] = c + k.z * k.z * t;
+    M.m[2][3] = 0.0f;
+
+    // 第四行已经是单位矩阵 [0,0,0,1]，无需修改
+
+    return M;
+}
+
 Matrix4 Matrix4::Multiply(const Matrix4& other) const {
     Matrix4 result; // 结果矩阵初始化为单位矩阵
     // 4x4矩阵乘法：result[i][j] = ∑(this[i][k] * other[k][j])
