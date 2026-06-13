@@ -13,7 +13,7 @@ int main()
 {
     //初始化部分
     // 创建Render对象，默认800x600窗口
-    Render render(1000,1000,100.0f);
+    Render render(2000,2000,100.0f);
     // 初始化（创建窗口）
     if (!render.Init())
     {
@@ -48,10 +48,6 @@ int main()
     //速度的单位是单位/s
     float dAngle=60.0f;
     float dx=100.0;
-    float cameraUpangle=0.0;
-    float cameraWaveangle=0.0;
-    Matrix4 cameraWave = Matrix4::RotateY(cameraWaveangle);
-
     //摄像头位置+方向
     Vector3 cameraPosition=Vector3(0,0,0,1);
     Vector3 cameraFount = Vector3(0.0f, 0.0f, 1.0f, 0.0f);
@@ -101,18 +97,18 @@ int main()
             camera.speed.y = -speed;
 
         if (keys[SDL_SCANCODE_K])//低头
-        {cameraUpangle=60.0;}
+            camera.angleSpeed.x = 60.0;
         else if (keys[SDL_SCANCODE_I])//抬头
-        {cameraUpangle=-60.0;}
+            camera.angleSpeed.x = -60.0;
         else
-        {cameraUpangle=0;}
+            camera.angleSpeed.x = 0;
 
-        if (keys[SDL_SCANCODE_L])//Y方向
-        {cameraWaveangle=60.0;}
-        else if (keys[SDL_SCANCODE_J])
-        {cameraWaveangle=-60.0;}
+        if (keys[SDL_SCANCODE_L])//水平右转
+            camera.angleSpeed.y = 60.0;
+        else if (keys[SDL_SCANCODE_J])//水平左转
+            camera.angleSpeed.y = -60.0;
         else
-        {cameraWaveangle=0;}
+            camera.angleSpeed.y = 0;
         std::vector<Vector3> vectors=vertices;
 
 
@@ -120,19 +116,7 @@ int main()
         rotateAngle+=dAngle/FPS;
         X+=dx/FPS;
 
-        // 水平旋转（Yaw）：绕世界 Y 轴旋转镜头朝向
-        cameraWaveangle *= (1/FPS);
-        cameraWave = Matrix4::RotateY(cameraWaveangle);
-        cameraFount = cameraWave.MultiplyVector(cameraFount);
-
-        // 垂直旋转（Pitch）：绕镜头的右轴旋转镜头朝向
-        cameraUpangle *= (1/FPS);
-        Vector3 rightAxis = camera.Up.cross(cameraFount).normalize();
-        Matrix4 pitchMatrix = Matrix4::RotateAxis(rightAxis, cameraUpangle);
-        cameraFount = pitchMatrix.MultiplyVector(cameraFount);
-
-        camera.setFront(cameraFount);
-
+        camera.turn(FPS);
         camera.move(FPS);
 
         //旋转矩阵
@@ -153,7 +137,7 @@ int main()
                 translateBack*
                     //rotateX*
                         //rotateZ*
-                            //rotateY*
+                            rotateY*
                                 translateToOrigin
         };
 

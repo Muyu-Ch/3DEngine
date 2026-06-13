@@ -76,6 +76,22 @@ void Camera::move(int FPS)
     setPosition(getPosition() + movement);
 }
 
+void Camera::turn(float FPS)
+{
+    // 水平旋转（Yaw）：绕世界 Y 轴旋转镜头朝向
+    float yawAngle = angleSpeed.y / FPS;
+    Matrix4 yawMatrix = Matrix4::RotateY(yawAngle);
+    Front = yawMatrix.MultiplyVector(Front);
+
+    // 垂直旋转（Pitch）：绕镜头的右轴旋转镜头朝向
+    float pitchAngle = angleSpeed.x / FPS;
+    Vector3 rightAxis = Up.cross(Front).normalize();
+    Matrix4 pitchMatrix = Matrix4::RotateAxis(rightAxis, pitchAngle);
+    Front = pitchMatrix.MultiplyVector(Front);
+
+    setFront(Front);
+}
+
 Vector3 Camera::getPosition()
 {
     return Position;

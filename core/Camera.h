@@ -11,6 +11,7 @@ public:
     Vector3 Up;        // 相机上方向
     Matrix4 ViewM;     // 视图矩阵（设为public方便访问）
     Vector3 speed;
+    Vector3 angleSpeed;  // 角度变化速度 (x: pitch上下, y: yaw左右, 单位: 度/秒)
 
     // 构造函数
     Camera();
@@ -24,6 +25,7 @@ public:
     void updateViewM();
 
     void move(int FPS);
+    void turn(float FPS);   // 旋转镜头朝向（根据 angleSpeed 绕世界Y轴和右轴旋转）
 
     Vector3 getPosition();
 
