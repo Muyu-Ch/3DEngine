@@ -10,7 +10,7 @@
 #include "Ground.h"
 #include "Axis.h"
 #include <SDL2/SDL.h>
-
+#include "Football.h"
 
 int main()
 {
@@ -40,6 +40,7 @@ int main()
     // 坐标轴：长度2500
     Axis axis(2500);
 
+    Football football(500);
     //变化量
     //速度的单位是单位/s
     float dAngle=60.0f;
@@ -123,6 +124,10 @@ int main()
         Matrix4 translateBack = Matrix4::Translate(cubeCenter.x, cubeCenter.y, cubeCenter.z);
         cube.modelMatrix = translateBack * rotateY * translateToOrigin;
 
+        //足球模型变换矩阵（放在立方体旁边）
+        Matrix4 footballRotate = Matrix4::RotateY(rotateAngle * 0.5f);
+        football.modelMatrix = Matrix4::Translate(0, 0, 1000) * footballRotate;
+
         // ========== 绘制 ==========
         render.Clear();
 
@@ -136,7 +141,10 @@ int main()
         render.Draw3DLine(axisEdges[Axis::Z_EDGE].first, axisEdges[Axis::Z_EDGE].second, BLUE);
 
         // 立方体
-        render.Draw3DLines(cube.getRenderEdges(camera.ViewM), WHITE);
+        //render.Draw3DLines(cube.getRenderEdges(camera.ViewM), WHITE);
+
+        // 足球
+        render.Draw3DLines(football.getRenderEdges(camera.ViewM), WHITE);
 
         render.Present();
 

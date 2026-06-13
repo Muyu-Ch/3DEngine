@@ -27,6 +27,7 @@ add_executable(3Dengine
         core/Cube.cpp
         core/Ground.cpp
         core/Axis.cpp
+        core/Football.cpp
 )
 
 # 链接SDL2库（关键！否则编译报错）
