@@ -22,6 +22,11 @@ add_executable(3Dengine
         render/Render.cpp
         math/Point.cpp
         core/Camera.cpp
+        core/Objects.cpp
+        core/Shape.cpp
+        core/Cube.cpp
+        core/Ground.cpp
+        core/Axis.cpp
 )
 
 # 链接SDL2库（关键！否则编译报错）

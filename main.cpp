@@ -6,6 +6,10 @@
 #include "Vector3.h"
 #include "Point.h"
 #include "Camera.h"
+#include "Objects.h"
+#include "Cube.h"
+#include "Ground.h"
+#include "Axis.h"
 #include <SDL2/SDL.h>
 
 
@@ -26,28 +30,24 @@ int main()
     float FPS=60.0;
     float speed =150;
 
-    //对象数据初始化
-    //立方体八个顶点坐标
-    std::vector<Vector3> vertices={
-        Vector3(150,150,500),
-        Vector3(150,-150,500),
-        Vector3 (-150,-150,500),
-        Vector3(-150,150,500),
-        Vector3(150,150,800),
-        Vector3(150,-150,800),
-        Vector3(-150,-150,800),
-        Vector3(-150,150,800)
-    };
-    //立方体中心
-    Vector3 Center=Vector3();
-    Center.center(vertices);
-    float rotateAngle=45;
-    float X=0;
+    // ========== 物体初始化（一行构造，无需手动设顶点和边） ==========
+
+    // 立方体：半边长150, Z范围 500~800
+    Cube cube(150, 150, 500, 800);
+
+    // 地面网格：半边长2500, 间距50
+    Ground ground(2500, 50);
+
+    // 坐标轴：长度2500
+    Axis axis(2500);
 
     //变化量
     //速度的单位是单位/s
     float dAngle=60.0f;
     float dx=100.0;
+    float rotateAngle=45;
+    float X=0;
+
     //摄像头位置+方向
     Vector3 cameraPosition=Vector3(0,0,0,1);
     Vector3 cameraFount = Vector3(0.0f, 0.0f, 1.0f, 0.0f);
@@ -109,8 +109,6 @@ int main()
             camera.angleSpeed.y = -60.0;
         else
             camera.angleSpeed.y = 0;
-        std::vector<Vector3> vectors=vertices;
-
 
         //物体变化量
         rotateAngle+=dAngle/FPS;
@@ -119,98 +117,27 @@ int main()
         camera.turn(FPS);
         camera.move(FPS);
 
-        //旋转矩阵
+        //立方体模型变换矩阵
+        Vector3 cubeCenter = cube.getCenter();
         Matrix4 rotateY = Matrix4::RotateY(rotateAngle);
-        Matrix4 rotateX = Matrix4::RotateX(rotateAngle);
-        Matrix4 rotateZ = Matrix4::RotateZ(rotateAngle);
+        Matrix4 translateToOrigin = Matrix4::Translate(-cubeCenter.x, -cubeCenter.y, -cubeCenter.z);
+        Matrix4 translateBack = Matrix4::Translate(cubeCenter.x, cubeCenter.y, cubeCenter.z);
+        cube.modelMatrix = translateBack * rotateY * translateToOrigin;
 
-        //平移矩阵
-        Matrix4 translateX=Matrix4::Translate(X,0,0);
-
-        //复原矩阵
-        Matrix4 translateToOrigin = Matrix4::Translate(-Center.x, -Center.y, -Center.z);
-        Matrix4 translateBack = Matrix4::Translate(Center.x, Center.y, Center.z);
-
-        Matrix4 transform ={
-            camera.ViewM*
-            //translateX*
-                translateBack*
-                    //rotateX*
-                        //rotateZ*
-                            rotateY*
-                                translateToOrigin
-        };
-
-
-        for (size_t i=0;i<vectors.size();i++)
-        {
-            vectors[i]=transform.MultiplyVector(vectors[i]);
-        }
-
-        // 使用3D线段构建边（所有顶点两两连线 = 立方体所有边+对角线）
-        std::vector<std::pair<Vector3, Vector3>> edges3D;
-        for (size_t i = 0; i < vectors.size(); i++)
-        {
-            for (size_t j = i + 1; j < vectors.size(); j++)
-            {
-                edges3D.emplace_back(vectors[i], vectors[j]);
-            }
-        }
-
-        // ========== 绘制部分 ==========
+        // ========== 绘制 ==========
         render.Clear();
 
-        // 1. 地面网格（XZ 平面，Y=0，黄色，每 50 单位一条，中心在原点）
-        const float GRID_SIZE = 2500.0f;
-        const float GRID_STEP = 50.0f;
-        std::vector<std::pair<Vector3, Vector3>> gridEdges;
+        // 地面网格
+        render.Draw3DLines(ground.getRenderEdges(camera.ViewM), YELLOW);
 
-        // 平行于 X 轴的线（在不同 Z 位置）
-        for (float z = -GRID_SIZE; z <= GRID_SIZE; z += GRID_STEP)
-        {
-            Vector3 v1(-GRID_SIZE, 0.0f, z, 1.0f);
-            Vector3 v2( GRID_SIZE, 0.0f, z, 1.0f);
-            v1 = camera.ViewM.MultiplyVector(v1);
-            v2 = camera.ViewM.MultiplyVector(v2);
-            gridEdges.emplace_back(v1, v2);
-        }
+        // 坐标轴（三种颜色分别绘制）
+        auto axisEdges = axis.getRenderEdges(camera.ViewM);
+        render.Draw3DLine(axisEdges[Axis::X_EDGE].first, axisEdges[Axis::X_EDGE].second, RED);
+        render.Draw3DLine(axisEdges[Axis::Y_EDGE].first, axisEdges[Axis::Y_EDGE].second, GREEN);
+        render.Draw3DLine(axisEdges[Axis::Z_EDGE].first, axisEdges[Axis::Z_EDGE].second, BLUE);
 
-        // 平行于 Z 轴的线（在不同 X 位置）
-        for (float x = -GRID_SIZE; x <= GRID_SIZE; x += GRID_STEP)
-        {
-            Vector3 v1(x, 0.0f, -GRID_SIZE, 1.0f);
-            Vector3 v2(x, 0.0f,  GRID_SIZE, 1.0f);
-            v1 = camera.ViewM.MultiplyVector(v1);
-            v2 = camera.ViewM.MultiplyVector(v2);
-            gridEdges.emplace_back(v1, v2);
-        }
-        render.Draw3DLines(gridEdges, YELLOW);
-
-        // 2. 坐标轴：X=红，Y=绿，Z=蓝
-        {
-            Vector3 v1(0.0f, 0.0f, 0.0f, 1.0f);
-            Vector3 v2(GRID_SIZE, 0.0f, 0.0f, 1.0f);
-            v1 = camera.ViewM.MultiplyVector(v1);
-            v2 = camera.ViewM.MultiplyVector(v2);
-            render.Draw3DLine(v1, v2, RED);
-        }
-        {
-            Vector3 v1(0.0f, 0.0f, 0.0f, 1.0f);
-            Vector3 v2(0.0f, GRID_SIZE, 0.0f, 1.0f);
-            v1 = camera.ViewM.MultiplyVector(v1);
-            v2 = camera.ViewM.MultiplyVector(v2);
-            render.Draw3DLine(v1, v2, GREEN);
-        }
-        {
-            Vector3 v1(0.0f, 0.0f, 0.0f, 1.0f);
-            Vector3 v2(0.0f, 0.0f, GRID_SIZE, 1.0f);
-            v1 = camera.ViewM.MultiplyVector(v1);
-            v2 = camera.ViewM.MultiplyVector(v2);
-            render.Draw3DLine(v1, v2, BLUE);
-        }
-
-        // 3. 立方体
-        render.Draw3DLines(edges3D,WHITE);
+        // 立方体
+        render.Draw3DLines(cube.getRenderEdges(camera.ViewM), WHITE);
 
         render.Present();
 
