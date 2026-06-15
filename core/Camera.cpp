@@ -96,3 +96,8 @@ Vector3 Camera::getPosition()
 {
     return Position;
 }
+
+Vector3 Camera::getFront()
+{
+    return Front;
+}

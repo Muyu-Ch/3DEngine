@@ -106,9 +106,9 @@ int main()
         else if (keys[SDL_SCANCODE_E])
             camera.speed.y = -speed;
 
-        if (keys[SDL_SCANCODE_K])//低头
+        if (keys[SDL_SCANCODE_K] && camera.getFront().y>-0.99)//低头
             camera.angleSpeed.x = 60.0;
-        else if (keys[SDL_SCANCODE_I])//抬头
+        else if (keys[SDL_SCANCODE_I] && camera.getFront().y<0.99)//抬头
             camera.angleSpeed.x = -60.0;
         else
             camera.angleSpeed.x = 0;
@@ -158,10 +158,14 @@ int main()
 
         // 显示摄像机坐标（实时变化）
         auto pos = camera.getPosition();
+        auto front = camera.getFront();
         render.DrawText(
-            std::format("Camera: X={:.1f}  Y={:.1f}  Z={:.1f}", pos.x, pos.y, pos.z),
+            std::format("CameraPosition: X={:.1f}  Y={:.1f}  Z={:.1f}", pos.x, pos.y, pos.z),
             10, 10, WHITE);
-        render.DrawText(std::format("Speed: {:.0f}", speed), 10, 40, GREEN);
+        render.DrawText(
+            std::format("CameraFront: X={:.1f}  Y={:.1f}  Z={:.1f}", front.x, front.y, front.z),
+            10, 40, WHITE);
+        render.DrawText(std::format("Speed: {:.0f}", speed), 10, 70, GREEN);
 
         render.Present();
 

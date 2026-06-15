@@ -28,6 +28,7 @@ public:
     void turn(float FPS);   // 旋转镜头朝向（根据 angleSpeed 绕世界Y轴和右轴旋转）
 
     Vector3 getPosition();
+    Vector3 getFront();
 
 private:
     // 辅助函数：确保计算精度
