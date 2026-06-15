@@ -1,6 +1,7 @@
 // main.cpp（测试入口）
 #include <iostream>
 #include<vector>
+#include<string>
 #include "Render.h"
 #include "Matrix4.h"
 #include "Vector3.h"
@@ -10,6 +11,7 @@
 #include "Ground.h"
 #include "Axis.h"
 #include <SDL2/SDL.h>
+#include <format>
 #include "Football.h"
 
 int main()
@@ -24,6 +26,14 @@ int main()
         return -1;
     }
     render.SetBackgroundColor(BLACK);
+
+    // 加载自带字体（跨平台，使用相对路径）
+    if (!render.LoadFont("assets/fonts/DejaVuSans.ttf", 24))
+    {
+        std::cerr << "字体加载失败！" << std::endl;
+        return -1;
+    }
+
     bool isRunning = true;    // 主循环开关
     SDL_Event event; // 事件对象
     float FPS=60.0;
@@ -35,7 +45,7 @@ int main()
     Cube cube(150, 150, 500, 800);
 
     // 地面网格：半边长2500, 间距50
-    Ground ground(2500, 50);
+    Ground ground(2500, 100);
 
     // 坐标轴：长度2500
     Axis axis(2500);
@@ -145,6 +155,13 @@ int main()
 
         // 足球
         render.Draw3DLines(football.getRenderEdges(camera.ViewM), WHITE);
+
+        // 显示摄像机坐标（实时变化）
+        auto pos = camera.getPosition();
+        render.DrawText(
+            std::format("Camera: X={:.1f}  Y={:.1f}  Z={:.1f}", pos.x, pos.y, pos.z),
+            10, 10, WHITE);
+        render.DrawText(std::format("Speed: {:.0f}", speed), 10, 40, GREEN);
 
         render.Present();
 

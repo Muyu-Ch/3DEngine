@@ -2,11 +2,40 @@
 #include "Render.h"
 #include "Point.h"
 #include<iostream>
+#include<string>
+
+#ifdef _WIN32
+#include <windows.h>
+#elif __APPLE__
+#include <mach-o/dyld.h>
+#else
+#include <unistd.h>
+#endif
+
+// 获取可执行文件所在目录（跨平台）
+static std::string GetExecutableDir()
+{
+    char path[4096] = {0};
+#ifdef _WIN32
+    GetModuleFileNameA(NULL, path, sizeof(path));
+#elif __APPLE__
+    uint32_t size = sizeof(path);
+    _NSGetExecutablePath(path, &size);
+    realpath(path, path);
+#else
+    // Linux: 通过 /proc/self/exe 获取
+    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (len != -1) path[len] = '\0';
+#endif
+    std::string full(path);
+    return full.substr(0, full.find_last_of("/\\"));
+}
 
 Render::Render(int width, int height, float fov)
 {
     window=nullptr;
     renderer=nullptr;
+    font=nullptr;
     window_width = width;
     window_height = height;
     this->fov = fov;
@@ -15,8 +44,10 @@ Render::Render(int width, int height, float fov)
 
 Render::~Render()
 {
+    if (font) TTF_CloseFont(font);
     if (renderer) SDL_DestroyRenderer(renderer);
     if (window) SDL_DestroyWindow(window);
+    TTF_Quit();
     SDL_Quit();
 }
 
@@ -335,6 +366,56 @@ void Render::Present()
     }
     // 把渲染器中绘制的内容显示到窗口
     SDL_RenderPresent(renderer);
+}
+
+// ========== 文字渲染实现 ==========
+
+bool Render::LoadFont(const char* fontPath, int fontSize)
+{
+    if (TTF_Init() < 0)
+    {
+        std::cerr << "TTF初始化失败：" << TTF_GetError() << std::endl;
+        return false;
+    }
+
+    // 相对路径 → 转为基于可执行文件目录的绝对路径
+    std::string fullPath = fontPath;
+    if (fontPath[0] != '/' && fontPath[0] != '\0')
+    {
+        fullPath = GetExecutableDir() + "/" + fontPath;
+    }
+
+    font = TTF_OpenFont(fullPath.c_str(), fontSize);
+    if (!font)
+    {
+        std::cerr << "字体加载失败（" << fullPath << "）：" << TTF_GetError() << std::endl;
+        return false;
+    }
+    std::cout << "字体加载成功：" << fullPath << std::endl;
+    return true;
+}
+
+void Render::DrawText(const char* text, int x, int y,
+                      Uint8 r, Uint8 g, Uint8 b)
+{
+    if (!font || !renderer) return;
+
+    SDL_Color color = {r, g, b, 255};
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text, color);
+    if (!surface) return;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Rect dst = {x, y, surface->w, surface->h};
+    SDL_FreeSurface(surface);
+
+    SDL_RenderCopy(renderer, texture, NULL, &dst);
+    SDL_DestroyTexture(texture);
+}
+
+void Render::DrawText(const std::string& text, int x, int y,
+                      Uint8 r, Uint8 g, Uint8 b)
+{
+    DrawText(text.c_str(), x, y, r, g, b);
 }
 
 void Render::HandleResize(int newWidth, int newHeight)

@@ -4,8 +4,10 @@
 #include "Vector3.h"
 #include "Point.h"
 #include<vector>
+#include<string>
 // SDL2头文件
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #define RGB(r,g,b) r,g,b
 #define RGBA(r,g,b,a) r,g,b,a
@@ -41,6 +43,7 @@ class Render
 private:
     SDL_Window* window;      // SDL窗口指针
     SDL_Renderer* renderer;  // SDL渲染器指针
+    TTF_Font* font;          // 字体指针
     int window_width;        // 窗口宽度
     int window_height;       // 窗口高度
     float fov;  // 视角
@@ -92,6 +95,16 @@ public:
         std::vector<std::pair<Point*,Point*> >& lines,
         Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a=255
         );
+
+    // ========== 文字渲染 ==========
+    // 加载字体（需在 Init() 之后调用）
+    bool LoadFont(const char* fontPath, int fontSize);
+    // 在屏幕指定位置绘制UTF-8文字（需在 Clear() 和 Present() 之间调用）
+    void DrawText(const char* text, int x, int y,
+                  Uint8 r = 255, Uint8 g = 255, Uint8 b = 255);
+    // std::string 版本（方便拼接动态参数）
+    void DrawText(const std::string& text, int x, int y,
+                  Uint8 r = 255, Uint8 g = 255, Uint8 b = 255);
 
     // 清空窗口（黑色背景）
     void Clear();
