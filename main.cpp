@@ -16,7 +16,7 @@ int main()
 {
     //初始化部分
     // 创建Render对象，默认800x600窗口
-    Render render(2000,2000,100.0f);
+    Render render(2000,1000,100.0f);
     // 初始化（创建窗口）
     if (!render.Init())
     {
@@ -153,6 +153,11 @@ int main()
         {
             if (event.type == SDL_QUIT) // 点击窗口关闭按钮
                 isRunning = false;
+            if (event.type == SDL_WINDOWEVENT &&
+                event.window.event == SDL_WINDOWEVENT_RESIZED)
+            {
+                render.HandleResize(event.window.data1, event.window.data2);
+            }
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) // 按ESC
                 isRunning = false;
         }

@@ -99,6 +99,9 @@ public:
     // 刷新画面（把绘制的内容显示到窗口）
     void Present();
 
+    // 窗口大小变化时更新内部参数
+    void HandleResize(int newWidth, int newHeight);
+
     // 等待退出（按ESC关闭窗口）
     void WaitQuit();
 };

@@ -36,7 +36,7 @@ bool Render::Init()
         SDL_WINDOWPOS_CENTERED,
         window_width,               // 宽度
         window_height,              // 高度
-        SDL_WINDOW_SHOWN            // 显示窗口
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE  // 显示窗口 + 可拖拽缩放
     );
     if (!window)
     {
@@ -335,6 +335,12 @@ void Render::Present()
     }
     // 把渲染器中绘制的内容显示到窗口
     SDL_RenderPresent(renderer);
+}
+
+void Render::HandleResize(int newWidth, int newHeight)
+{
+    window_width = newWidth;
+    window_height = newHeight;
 }
 
 void Render::WaitQuit()
