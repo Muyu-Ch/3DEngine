@@ -147,13 +147,74 @@ bool Render::ClipSegmentToNearPlane(Vector3& v1, Vector3& v2)
     return true;
 }
 
+// 辅助函数：用平面 n·P >= 0 裁剪线段（n 指向内侧）
+// 返回值：true = 有可见部分，false = 完全在平面外侧
+static bool ClipAgainstPlane(Vector3& a, Vector3& b, float nx, float ny, float nz)
+{
+    float d1 = nx * a.x + ny * a.y + nz * a.z;
+    float d2 = nx * b.x + ny * b.y + nz * b.z;
+
+    bool in1 = d1 >= 0.0f;
+    bool in2 = d2 >= 0.0f;
+
+    if (in1 && in2) return true;       // 两端都在内侧
+    if (!in1 && !in2) return false;    // 两端都在外侧，完全不可见
+
+    // 一端在内一端在外：将 a 统一为内侧点
+    if (!in1)
+    {
+        std::swap(a, b);
+        std::swap(d1, d2);
+    }
+
+    // 插值裁剪：d1 >= 0, d2 < 0, 找 d=0 的交点
+    float t = d1 / (d1 - d2);
+
+    // 如果外侧端点距离平面非常远（t 接近 0），裁剪后只留下极短的线段
+    // 若同一点连接的多条边都这样裁剪，会在屏幕边缘形成放射状"长线"伪影
+    // 对这种边直接丢弃，避免视觉伪影
+    if (t < 0.02f) return false;
+
+    b.x = a.x + t * (b.x - a.x);
+    b.y = a.y + t * (b.y - a.y);
+    b.z = a.z + t * (b.z - a.z);
+    b.t = a.t + t * (b.t - a.t);
+    return true;
+}
+
+bool Render::ClipSegmentToFrustum(Vector3& v1, Vector3& v2)
+{
+    // 第1步：近平面裁剪
+    if (!ClipSegmentToNearPlane(v1, v2))
+        return false;
+
+    // 第2步：计算视锥体侧面边界系数
+    // 投影公式: screen_x = ww/2 + (x/z) * (1/tan(fov/2)) * scale
+    // 由 screen_x ∈ [0, ww] 导出: |x| <= z * (ww/2) * tan(fov/2) / scale
+    float tanHalfFov = std::tan(fov * 3.14159f / 180.0f / 2.0f);
+    float hFactor = (window_width / 2.0f) * tanHalfFov / this->scale;   // 水平半宽度系数
+    float vFactor = (window_height / 2.0f) * tanHalfFov / this->scale;  // 垂直半高度系数
+
+    // 第3步：依次对左、右、底、顶四个视锥面做 3D 裁剪
+    //  左平面:  x + hFactor*z >= 0  （法线指向右侧）
+    //  右平面: -x + hFactor*z >= 0  （法线指向左侧）
+    //  底平面:  y + vFactor*z >= 0  （法线指向上方）
+    //  顶平面: -y + vFactor*z >= 0  （法线指向下方）
+    if (!ClipAgainstPlane(v1, v2,  1.0f, 0.0f, hFactor)) return false;  // 左
+    if (!ClipAgainstPlane(v1, v2, -1.0f, 0.0f, hFactor)) return false;  // 右
+    if (!ClipAgainstPlane(v1, v2, 0.0f,  1.0f, vFactor)) return false;  // 底
+    if (!ClipAgainstPlane(v1, v2, 0.0f, -1.0f, vFactor)) return false;  // 顶
+
+    return true;
+}
+
 void Render::Draw3DLine(Vector3 v1, Vector3 v2,
     Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    // 先对3D线段进行近平面裁剪
-    if (!ClipSegmentToNearPlane(v1, v2))
+    // 先对3D线段进行完整视锥体裁剪（近平面 + 4个侧面）
+    if (!ClipSegmentToFrustum(v1, v2))
     {
-        return;  // 整条线段在近平面之后，不绘制
+        return;  // 整条线段在视锥体之外，不绘制
     }
 
     // 投影到2D屏幕坐标
@@ -177,7 +238,7 @@ void Render::Draw3DLines(
 
 void Render::DrawPixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    if (x<0 || x>window_width || y<0 || y>window_height)
+    if (x<0 || x>=window_width || y<0 || y>=window_height)
     {
         return;
     }

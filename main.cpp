@@ -2,6 +2,8 @@
 #include <iostream>
 #include<vector>
 #include<string>
+#include <SDL2/SDL.h>
+#include <format>
 #include "Render.h"
 #include "Matrix4.h"
 #include "Vector3.h"
@@ -10,9 +12,8 @@
 #include "Cube.h"
 #include "Ground.h"
 #include "Axis.h"
-#include <SDL2/SDL.h>
-#include <format>
 #include "Football.h"
+#include "Ball.h"
 
 int main()
 {
@@ -51,6 +52,8 @@ int main()
     Axis axis(2500);
 
     Football football(500);
+
+    Ball ball(300);
     //变化量
     //速度的单位是单位/s
     float dAngle=60.0f;
@@ -138,6 +141,10 @@ int main()
         Matrix4 footballRotate = Matrix4::RotateY(rotateAngle * 0.5f);
         football.modelMatrix = Matrix4::Translate(0, 0, 1000) * footballRotate;
 
+        // 球体旋转动画（放在正前方，保持在视锥体中心避免裁剪伪影）
+        Matrix4 ballRotateY = Matrix4::RotateY(rotateAngle * 0.5f);
+        Matrix4 ballRotateX = Matrix4::RotateX(rotateAngle * 0.3f);
+        ball.modelMatrix = Matrix4::Translate(1000, 0, 0) * ballRotateY * ballRotateX;
         // ========== 绘制 ==========
         render.Clear();
 
@@ -155,6 +162,8 @@ int main()
 
         // 足球
         render.Draw3DLines(football.getRenderEdges(camera.ViewM), WHITE);
+
+        render.Draw3DLines(ball.getRenderEdges(camera.ViewM), WHITE);
 
         // 显示摄像机坐标（实时变化）
         auto pos = camera.getPosition();

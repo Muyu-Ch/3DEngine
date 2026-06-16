@@ -34,6 +34,7 @@ add_executable(3Dengine
         core/Ground.cpp
         core/Axis.cpp
         core/Football.cpp
+        core/Ball.cpp
 )
 
 # 链接SDL2库（关键！否则编译报错）

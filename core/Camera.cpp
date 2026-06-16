@@ -34,7 +34,19 @@ void Camera::setFront(const Vector3& front) {
 void Camera::updateViewM() {
     // 1. 计算相机三个方向轴
     Vector3 zAxis = Front.normalize();
-    Vector3 xAxis = Up.cross(zAxis).normalize();
+
+    // 计算右轴，并防止万向节锁死（Front 平行于 Up 时叉乘为零向量）
+    Vector3 xAxis = Up.cross(zAxis);
+    if (xAxis.length() < 0.0001f)
+    {
+        // Front 接近 ±Up：换一个世界轴来计算右轴
+        Vector3 worldX(1.0f, 0.0f, 0.0f, 0.0f);
+        Vector3 worldZ(0.0f, 0.0f, 1.0f, 0.0f);
+        Vector3 ref = (std::abs(zAxis.dot(worldX)) < 0.99f) ? worldX : worldZ;
+        xAxis = ref.cross(zAxis);
+    }
+    xAxis = xAxis.normalize();
+
     Vector3 yAxis = zAxis.cross(xAxis).normalize();
 
     // 2. 先重置为单位矩阵

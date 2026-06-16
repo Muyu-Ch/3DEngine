@@ -74,6 +74,10 @@ public:
     // 注意：会修改传入的 v1, v2（裁剪后的新端点）
     bool ClipSegmentToNearPlane(Vector3& v1, Vector3& v2);
 
+    // 对一条3D线段进行完整视锥体裁剪（近平面 + 上下左右四个侧面）
+    // 解决顶点在近平面附近时投影坐标极大导致的"长线"问题
+    bool ClipSegmentToFrustum(Vector3& v1, Vector3& v2);
+
     // 绘制一条3D线段（内部完成裁剪+投影+绘制）
     void Draw3DLine(Vector3 v1, Vector3 v2,
         Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a = 255);
