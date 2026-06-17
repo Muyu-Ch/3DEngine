@@ -40,6 +40,8 @@ Render::Render(int width, int height, float fov)
     window_height = height;
     this->fov = fov;
     this->scale = 1000;
+    this->isOrtho = false;
+    this->orthoScale = 0.5f;  // 正交投影缩放系数（像素/单位）
 }
 
 Render::~Render()
@@ -92,20 +94,48 @@ void Render::SetBackgroundColor(Uint8 red, Uint8 green, Uint8 blue)
     bgB=blue;
 }
 
+void Render::SetProjection(bool ortho)
+{
+    isOrtho = ortho;
+}
+
+bool Render::IsOrtho() const
+{
+    return isOrtho;
+}
+
 void Render::Project(const Vector3& point3d, Point& point2d)
 {
-    double rad = fov * 3.14159 / 180.0;
-    double scale = 1.0 / tan(rad / 2);
-    if (point3d.z >= NEAR_PLANE)
+    if (isOrtho)
     {
-        point2d.x = window_width / 2 + static_cast<int>((double)point3d.x/point3d.z * scale * this->scale);
-        point2d.y = window_height / 2 - static_cast<int>((double)point3d.y/point3d.z * scale * this->scale);
+        // 正交投影：直接映射，不除以z，无近大远小
+        if (point3d.z >= NEAR_PLANE)
+        {
+            point2d.x = window_width / 2 + static_cast<int>(point3d.x * orthoScale);
+            point2d.y = window_height / 2 - static_cast<int>(point3d.y * orthoScale);
+        }
+        else
+        {
+            point2d.x = -10000;
+            point2d.y = -10000;
+        }
     }
     else
     {
-        // 顶点在近平面后方，设为无效坐标（后续裁剪应避免走到这里）
-        point2d.x = -10000;
-        point2d.y = -10000;
+        // 透视投影：除以z产生近大远小效果
+        double rad = fov * 3.14159 / 180.0;
+        double scale = 1.0 / tan(rad / 2);
+        if (point3d.z >= NEAR_PLANE)
+        {
+            point2d.x = window_width / 2 + static_cast<int>((double)point3d.x/point3d.z * scale * this->scale);
+            point2d.y = window_height / 2 - static_cast<int>((double)point3d.y/point3d.z * scale * this->scale);
+        }
+        else
+        {
+            // 顶点在近平面后方，设为无效坐标（后续裁剪应避免走到这里）
+            point2d.x = -10000;
+            point2d.y = -10000;
+        }
     }
 }
 
@@ -184,9 +214,14 @@ static bool ClipAgainstPlane(Vector3& a, Vector3& b, float nx, float ny, float n
 
 bool Render::ClipSegmentToFrustum(Vector3& v1, Vector3& v2)
 {
-    // 第1步：近平面裁剪
+    // 第1步：近平面裁剪（两种投影都需要）
     if (!ClipSegmentToNearPlane(v1, v2))
         return false;
+
+    // 正交投影：视体是长方体，无边界面扩展，跳过侧锥面裁剪
+    // 超屏由后续2D Cohen-Sutherland 裁剪处理
+    if (isOrtho)
+        return true;
 
     // 第2步：计算视锥体侧面边界系数
     // 投影公式: screen_x = ww/2 + (x/z) * (1/tan(fov/2)) * scale

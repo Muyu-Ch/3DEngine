@@ -39,6 +39,7 @@ int main()
     SDL_Event event; // 事件对象
     float FPS=60.0;
     float speed =150;
+    bool isOrtho = false;  // 当前投影模式：false=透视, true=正交
 
     // ========== 物体初始化（一行构造，无需手动设顶点和边） ==========
 
@@ -123,6 +124,22 @@ int main()
         else
             camera.angleSpeed.y = 0;
 
+        // P键切换投影模式（正交/透视）
+        static bool pPressed = false;
+        if (keys[SDL_SCANCODE_P])
+        {
+            if (!pPressed)
+            {
+                isOrtho = !isOrtho;
+                render.SetProjection(isOrtho);
+                pPressed = true;
+            }
+        }
+        else
+        {
+            pPressed = false;
+        }
+
         //物体变化量
         rotateAngle+=dAngle/FPS;
         X+=dx/FPS;
@@ -144,7 +161,7 @@ int main()
         // 球体旋转动画（放在正前方，保持在视锥体中心避免裁剪伪影）
         Matrix4 ballRotateY = Matrix4::RotateY(rotateAngle * 0.5f);
         Matrix4 ballRotateX = Matrix4::RotateX(rotateAngle * 0.3f);
-        ball.modelMatrix = Matrix4::Translate(1000, 0, 0) * ballRotateY * ballRotateX;
+        ball.modelMatrix = Matrix4::Translate(1000, 0, 0);
         // ========== 绘制 ==========
         render.Clear();
 
@@ -175,6 +192,9 @@ int main()
             std::format("CameraFront: X={:.1f}  Y={:.1f}  Z={:.1f}", front.x, front.y, front.z),
             10, 40, WHITE);
         render.DrawText(std::format("Speed: {:.0f}", speed), 10, 70, GREEN);
+        render.DrawText(
+            std::format("Projection: {} (P)", isOrtho ? "Orthographic" : "Perspective"),
+            10, 100, CYAN);
 
         render.Present();
 

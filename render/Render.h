@@ -48,6 +48,8 @@ private:
     int window_height;       // 窗口高度
     float fov;  // 视角
     float scale; //像素比例尺
+    bool isOrtho;   // true=正交投影, false=透视投影
+    float orthoScale; // 正交投影的缩放系数
     Uint8 bgR=0;
     Uint8 bgG=0;
     Uint8 bgB=0;
@@ -65,6 +67,10 @@ public:
 
     //背景颜色设置
     void SetBackgroundColor(Uint8 red=0, Uint8 green=0, Uint8 blue=0);
+
+    // 设置投影模式（true=正交, false=透视）
+    void SetProjection(bool ortho);
+    bool IsOrtho() const;
 
     // 3D坐标→2D屏幕坐标（透视投影）
     void Project(const Vector3& point3d, Point& points2d);
