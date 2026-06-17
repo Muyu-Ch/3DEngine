@@ -76,13 +76,26 @@ void Camera::updateViewM() {
 
 void Camera::move(int FPS)
 {
-    // 相机本地方向移动：将移动量投影到镜头的右/前/上方向
-    Vector3 camRight   = Up.cross(Front).normalize();   // 镜头右方向
-    Vector3 camForward = Front.normalize();                    // 镜头前方向
-    Vector3 camUp      = Up.normalize();                       // 镜头上方向
+    // 将Front投影到水平面（XZ平面），W/S只沿水平方向移动
+    Vector3 frontHoriz = Vector3(Front.x, 0.0f, Front.z);
+    float horizLen = frontHoriz.length();
+    if (horizLen < 0.0001f)
+    {
+        // Front接近正上方/正下方时，退化为看向Z轴正方向
+        frontHoriz = Vector3(0.0f, 0.0f, 1.0f);
+    }
+    else
+    {
+        frontHoriz = frontHoriz * (1.0f / horizLen);  // 归一化
+    }
+
+    // 水平右方向：世界Y轴 叉乘 水平前方向
+    Vector3 worldUp(0.0f, 1.0f, 0.0f);
+    Vector3 camRight = worldUp.cross(frontHoriz).normalize();
+    Vector3 camUp(0.0f, 1.0f, 0.0f);  // 上下移动始终沿世界Y轴
 
     Vector3 movement = camRight   * (speed.x / FPS)
-                     + camForward * (speed.z / FPS)
+                     + frontHoriz * (speed.z / FPS)
                      + camUp      * (speed.y / FPS);
 
     setPosition(getPosition() + movement);
