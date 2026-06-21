@@ -125,9 +125,9 @@ int main()
         else
             camera.angleSpeed.y = 0;
 
-        if (keys[SDL_SCANCODE_O] && isOrtho)//低头
+        if (keys[SDL_SCANCODE_O] && isOrtho)
             dScale=1.0;
-        else if (keys[SDL_SCANCODE_P] && isOrtho)//抬头
+        else if (keys[SDL_SCANCODE_P] && isOrtho && dScale>0.1)
             dScale = -1.0;
         else
             dScale= 0.0;
