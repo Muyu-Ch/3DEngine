@@ -92,9 +92,9 @@ int main()
             speed=1000;
 
         if (keys[SDL_SCANCODE_UP])
-            speed+=50;
+            speed = std::min(speed * 1.1f, 10000.0f);
         else if (keys[SDL_SCANCODE_DOWN])
-            speed-=50;
+            speed = std::max(speed * 0.9f, 10.0f);
 
         if (keys[SDL_SCANCODE_W])
             camera.speed.z = speed;
