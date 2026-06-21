@@ -61,6 +61,7 @@ int main()
     float dx=100.0;
     float rotateAngle=45;
     float X=0;
+    float dScale=0;
 
     //摄像头位置+方向
     Vector3 cameraPosition=Vector3(0,0,0,1);
@@ -124,9 +125,16 @@ int main()
         else
             camera.angleSpeed.y = 0;
 
+        if (keys[SDL_SCANCODE_O] && isOrtho)//低头
+            dScale=1.0;
+        else if (keys[SDL_SCANCODE_P] && isOrtho)//抬头
+            dScale = -1.0;
+        else
+            dScale= 0.0;
+
         // P键切换投影模式（正交/透视）
         static bool pPressed = false;
-        if (keys[SDL_SCANCODE_P])
+        if (keys[SDL_SCANCODE_M])
         {
             if (!pPressed)
             {
@@ -196,6 +204,7 @@ int main()
             std::format("Projection: {} (P)", isOrtho ? "Orthographic" : "Perspective"),
             10, 100, CYAN);
 
+        render.orthoScale+=dScale/FPS;
         render.Present();
 
         //退出引擎

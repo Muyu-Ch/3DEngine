@@ -49,12 +49,13 @@ private:
     float fov;  // 视角
     float scale; //像素比例尺
     bool isOrtho;   // true=正交投影, false=透视投影
-    float orthoScale; // 正交投影的缩放系数
     Uint8 bgR=0;
     Uint8 bgG=0;
     Uint8 bgB=0;
 
 public:
+
+    float orthoScale; // 正交投影的缩放系数
     // 近裁剪面距离：任何 z < NEAR_PLANE 的点都在相机后方，需要被裁剪
     static constexpr float NEAR_PLANE = 0.1f;
     // 构造函数
