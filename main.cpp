@@ -127,7 +127,7 @@ int main()
 
         if (keys[SDL_SCANCODE_O] && isOrtho)
             dScale=1.0;
-        else if (keys[SDL_SCANCODE_P] && isOrtho && dScale>0.1)
+        else if (keys[SDL_SCANCODE_P] && isOrtho && render.orthoScale>0.1)
             dScale = -1.0;
         else
             dScale= 0.0;
