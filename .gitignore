@@ -8,10 +8,14 @@ cmake_install.cmake
 *.out
 3DEngine  # 可执行文件
 
+# IDE
+.idea/
+
 # 系统缓存
 .DS_Store
 *.swp
 *.swo
+Thumbs.db
 
 # 日志/临时文件
 *.log
