@@ -152,7 +152,7 @@ int main()
         rotateAngle+=dAngle/FPS;
         X+=dx/FPS;
 
-        camera.turn(FPS);
+        camera.turn(FPS, isOrtho);
         camera.move(FPS);
 
         //立方体模型变换矩阵

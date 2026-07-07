@@ -12,6 +12,7 @@ public:
     Matrix4 ViewM;     // 视图矩阵（设为public方便访问）
     Vector3 speed;
     Vector3 angleSpeed;  // 角度变化速度 (x: pitch上下, y: yaw左右, 单位: 度/秒)
+    Vector3 cachedRight; // 缓存上一帧的右轴方向，万向节锁时保持方向连续，避免画面跳转
 
     // 构造函数
     Camera();
@@ -25,7 +26,7 @@ public:
     void updateViewM();
 
     void move(int FPS);
-    void turn(float FPS);   // 旋转镜头朝向（根据 angleSpeed 绕世界Y轴和右轴旋转）
+    void turn(float FPS, bool isOrtho = false);   // 旋转镜头朝向，正交模式下允许完全俯视
 
     Vector3 getPosition();
     Vector3 getFront();

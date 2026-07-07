@@ -6,6 +6,7 @@ Camera::Camera() {
     Position = Vector3(0.0f, 0.0f, 0.0f, 1.0f);
     Front = Vector3(0.0f, 0.0f, 1.0f, 0.0f);   // 朝向Z+
     Up = Vector3(0.0f, 1.0f, 0.0f, 0.0f);      // 上方向Y+
+    cachedRight = Vector3(1.0f, 0.0f, 0.0f, 0.0f); // 初始右轴+X
     ViewM = Matrix4();
     updateViewM();
 }
@@ -15,6 +16,7 @@ Camera::Camera(const Vector3& position, const Vector3& front, const Vector3& up)
     Position = position;
     Front = front.normalize();
     Up = up.normalize();
+    cachedRight = Up.cross(Front).normalize();
     ViewM = Matrix4();
     updateViewM();
 }
@@ -35,15 +37,26 @@ void Camera::updateViewM() {
     // 1. 计算相机三个方向轴
     Vector3 zAxis = Front.normalize();
 
-    // 计算右轴，并防止万向节锁死（Front 平行于 Up 时叉乘为零向量）
-    Vector3 xAxis = Up.cross(zAxis);
-    if (xAxis.length() < 0.0001f)
+    // 用世界Up叉乘zAxis，当结果够大时更新缓存右轴（可靠方向）
+    Vector3 crossXAxis = Up.cross(zAxis);
+    float crossLen = crossXAxis.length();
+    if (crossLen > 0.01f)
     {
-        // Front 接近 ±Up：换一个世界轴来计算右轴
+        cachedRight = crossXAxis * (1.0f / crossLen);  // 叉乘可靠，更新缓存
+    }
+    // 始终用缓存右轴投影到与zAxis垂直的平面，保证方向连续不跳变
+    Vector3 xAxis = cachedRight - zAxis * cachedRight.dot(zAxis);
+    float len = xAxis.length();
+    if (len < 0.0001f)
+    {
+        // 缓存与zAxis平行（极端边缘情况），回退到世界轴
         Vector3 worldX(1.0f, 0.0f, 0.0f, 0.0f);
-        Vector3 worldZ(0.0f, 0.0f, 1.0f, 0.0f);
-        Vector3 ref = (std::abs(zAxis.dot(worldX)) < 0.99f) ? worldX : worldZ;
-        xAxis = ref.cross(zAxis);
+        xAxis = worldX - zAxis * worldX.dot(zAxis);
+        if (xAxis.length() < 0.0001f)
+        {
+            Vector3 worldZ(0.0f, 0.0f, 1.0f, 0.0f);
+            xAxis = worldZ - zAxis * worldZ.dot(zAxis);
+        }
     }
     xAxis = xAxis.normalize();
 
@@ -101,7 +114,7 @@ void Camera::move(int FPS)
     setPosition(getPosition() + movement);
 }
 
-void Camera::turn(float FPS)
+void Camera::turn(float FPS, bool isOrtho)
 {
     // 水平旋转（Yaw）：始终绕世界 Y 轴（固定竖直轴），保证转头永远是水平的
     float yawAngle = angleSpeed.y / FPS;
@@ -111,22 +124,29 @@ void Camera::turn(float FPS)
     // 垂直旋转（Pitch）：绕水平右轴（世界Y × Front），保证俯仰轴始终水平
     float pitchAngle = angleSpeed.x / FPS;
     Vector3 worldUp(0.0f, 1.0f, 0.0f);
-    Vector3 rightAxis = worldUp.cross(Front);
+
+    // 用世界Y叉乘Front算右轴，够大时更新缓存
+    Vector3 crossRight = worldUp.cross(Front);
+    float crossLen = crossRight.length();
+    if (crossLen > 0.01f)
+    {
+        cachedRight = crossRight * (1.0f / crossLen);  // 叉乘可靠，更新缓存
+    }
+    // 始终用缓存右轴投影到水平面，保证方向连续
+    Vector3 rightAxis = cachedRight - worldUp * cachedRight.dot(worldUp);
     float len = rightAxis.length();
     if (len < 0.0001f)
     {
-        // Front 平行于世界 Y 轴（极端情况），换参考轴计算右轴
-        Vector3 worldZ(0.0f, 0.0f, 1.0f);
-        rightAxis = Front.cross(worldZ);
+        rightAxis = Vector3(1.0f, 0.0f, 0.0f);  // 缓存垂直（极少情况），回退+X
     }
     rightAxis = rightAxis.normalize();
 
     Matrix4 pitchMatrix = Matrix4::RotateAxis(rightAxis, pitchAngle);
     Vector3 newFront = pitchMatrix.MultiplyVector(Front);
 
-    // Pitch 限幅：防止无限绕圈，对应约 ±87°（sin87° ≈ 0.999）
-    const float maxPitchY = 0.999f;
-    if (std::abs(newFront.y) < maxPitchY)
+    // 透视模式下限制 pitch 范围（约 ±87°），防止无限绕圈
+    // 正交模式下允许完全俯视/仰视（Front.y 可达 ±1.0）
+    if (isOrtho || std::abs(newFront.y) < 0.999f)
     {
         Front = newFront;
     }
