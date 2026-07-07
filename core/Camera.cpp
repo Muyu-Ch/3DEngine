@@ -103,17 +103,34 @@ void Camera::move(int FPS)
 
 void Camera::turn(float FPS)
 {
-    // 水平旋转（Yaw）：绕世界 Y 轴旋转镜头朝向
+    // 水平旋转（Yaw）：始终绕世界 Y 轴（固定竖直轴），保证转头永远是水平的
     float yawAngle = angleSpeed.y / FPS;
     Matrix4 yawMatrix = Matrix4::RotateY(yawAngle);
     Front = yawMatrix.MultiplyVector(Front);
 
-    // 垂直旋转（Pitch）：绕镜头的右轴旋转镜头朝向
+    // 垂直旋转（Pitch）：绕水平右轴（世界Y × Front），保证俯仰轴始终水平
     float pitchAngle = angleSpeed.x / FPS;
-    Vector3 rightAxis = Up.cross(Front).normalize();
+    Vector3 worldUp(0.0f, 1.0f, 0.0f);
+    Vector3 rightAxis = worldUp.cross(Front);
+    float len = rightAxis.length();
+    if (len < 0.0001f)
+    {
+        // Front 平行于世界 Y 轴（极端情况），换参考轴计算右轴
+        Vector3 worldZ(0.0f, 0.0f, 1.0f);
+        rightAxis = Front.cross(worldZ);
+    }
+    rightAxis = rightAxis.normalize();
+
     Matrix4 pitchMatrix = Matrix4::RotateAxis(rightAxis, pitchAngle);
-    Front = pitchMatrix.MultiplyVector(Front);
-    Up = pitchMatrix.MultiplyVector(Up);        // 同步旋转Up，保持与Front正交，避免万向节锁
+    Vector3 newFront = pitchMatrix.MultiplyVector(Front);
+
+    // Pitch 限幅：防止无限绕圈，对应约 ±87°（sin87° ≈ 0.999）
+    const float maxPitchY = 0.999f;
+    if (std::abs(newFront.y) < maxPitchY)
+    {
+        Front = newFront;
+    }
+    // 超过限幅则忽略本次 pitch 旋转
 
     setFront(Front);
 }
