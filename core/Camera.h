@@ -30,11 +30,6 @@ public:
     Vector3 getPosition();
     Vector3 getFront();
 
-private:
-    // 辅助函数：确保计算精度
-    float clamp(float val, float min, float max) {
-        return val < min ? min : (val > max ? max : val);
-    }
 };
 
 #endif // CAMERA_H

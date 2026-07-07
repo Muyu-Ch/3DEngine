@@ -113,6 +113,7 @@ void Camera::turn(float FPS)
     Vector3 rightAxis = Up.cross(Front).normalize();
     Matrix4 pitchMatrix = Matrix4::RotateAxis(rightAxis, pitchAngle);
     Front = pitchMatrix.MultiplyVector(Front);
+    Up = pitchMatrix.MultiplyVector(Up);        // 同步旋转Up，保持与Front正交，避免万向节锁
 
     setFront(Front);
 }

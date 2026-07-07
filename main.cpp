@@ -111,9 +111,9 @@ int main()
         else if (keys[SDL_SCANCODE_E])
             camera.speed.y = -speed;
 
-        if (keys[SDL_SCANCODE_K] && camera.getFront().y>-0.999)//低头
+        if (keys[SDL_SCANCODE_K])//低头
             camera.angleSpeed.x = 60.0;
-        else if (keys[SDL_SCANCODE_I] && camera.getFront().y<0.999)//抬头
+        else if (keys[SDL_SCANCODE_I])//抬头
             camera.angleSpeed.x = -60.0;
         else
             camera.angleSpeed.x = 0;
