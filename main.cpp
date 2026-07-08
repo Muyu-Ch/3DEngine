@@ -182,9 +182,6 @@ int main()
         render.Draw3DLine(axisEdges[Axis::Y_EDGE].first, axisEdges[Axis::Y_EDGE].second, GREEN);
         render.Draw3DLine(axisEdges[Axis::Z_EDGE].first, axisEdges[Axis::Z_EDGE].second, BLUE);
 
-        // 立方体
-        //render.Draw3DLines(cube.getRenderEdges(camera.ViewM), WHITE);
-
         // 足球
         render.Draw3DLines(football.getRenderEdges(camera.ViewM), WHITE);
 
