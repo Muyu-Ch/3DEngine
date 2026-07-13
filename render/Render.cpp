@@ -1,8 +1,6 @@
 // render.cpp
 #include "Render.h"
-#include "Point.h"
-#include<iostream>
-#include<string>
+#include <iostream>
 
 #ifdef _WIN32
 #include <windows.h>

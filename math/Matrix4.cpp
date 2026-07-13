@@ -1,7 +1,6 @@
-#include<iostream>
-#include"Matrix4.h"
-#include<cmath>
-#include"Vector3.h"
+#include <iostream>
+#include "Matrix4.h"
+#include <cmath>
 
 Matrix4::Matrix4()
 {

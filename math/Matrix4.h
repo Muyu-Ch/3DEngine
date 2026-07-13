@@ -2,8 +2,7 @@
 #define INC_3DENGINE_MATRIX4_H
 
 
-// 提前声明 Vector3 类（因为 Matrix4 要用到 Vector3，避免循环包含）
-class Vector3;
+#include "Vector3.h"
 
 // 4x4矩阵类：封装3D空间变换的核心逻辑
 class Matrix4

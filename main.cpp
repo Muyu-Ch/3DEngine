@@ -1,14 +1,11 @@
 // main.cpp（测试入口）
 #include <iostream>
-#include<vector>
-#include<string>
 #include <SDL2/SDL.h>
 #include <format>
 #include "Render.h"
 #include "Matrix4.h"
 #include "Vector3.h"
 #include "Camera.h"
-#include "Object.h"
 #include "Cube.h"
 #include "Ground.h"
 #include "Axis.h"
