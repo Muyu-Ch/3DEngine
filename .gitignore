@@ -1,15 +1,9 @@
-# CLion/CMake生成的文件
-cmake-build-*/
-CMakeFiles/
-Makefile
-cmake_install.cmake
-*.cmake
-*.o
-*.out
-3DEngine  # 可执行文件
+# 构建产物
+build/
 
 # IDE
 .idea/
+.vscode/
 
 # 系统缓存
 .DS_Store
