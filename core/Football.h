@@ -1,9 +1,9 @@
 #ifndef FOOTBALL_H
 #define FOOTBALL_H
 
-#include "Shape.h"
+#include "Object.h"
 
-class Football : public Shape {
+class Football : public Object {
 public:
     // radius: 球体半径
     explicit Football(float radius);

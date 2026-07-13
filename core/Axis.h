@@ -1,9 +1,9 @@
 #ifndef AXIS_H
 #define AXIS_H
 
-#include "Objects.h"
+#include "Object.h"
 
-class Axis : public Objects {
+class Axis : public Object {
 public:
     // length: 坐标轴长度
     Axis(float length);

@@ -9,6 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include_directories(${CMAKE_SOURCE_DIR}/math)
 include_directories(${CMAKE_SOURCE_DIR}/render)
 include_directories(${CMAKE_SOURCE_DIR}/core)
+include_directories(${CMAKE_SOURCE_DIR}/camera)
 
 # 查找SDL2库
 find_package(SDL2 REQUIRED)
@@ -27,14 +28,13 @@ add_executable(3Dengine
         math/Matrix4.cpp
         render/Render.cpp
         math/Point.cpp
-        core/Camera.cpp
-        core/Objects.cpp
-        core/Shape.cpp
+        camera/Camera.cpp
+        core/Object.cpp
         core/Cube.cpp
         core/Ground.cpp
         core/Axis.cpp
         core/Football.cpp
-        core/Ball.cpp
+        core/Sphere.cpp
 )
 
 # 链接SDL2库（关键！否则编译报错）

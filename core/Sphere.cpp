@@ -1,7 +1,7 @@
-#include "Ball.h"
+#include "Sphere.h"
 #include <cmath>
 
-Ball::Ball(float radius, int segments, int rings)
+Sphere::Sphere(float radius, int segments, int rings)
 {
     // ========== 生成顶点 ==========
     // 布局：顶极点 + rings*segments 个纬圈顶点 + 底极点
