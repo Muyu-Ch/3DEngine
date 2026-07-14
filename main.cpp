@@ -164,9 +164,9 @@ int main()
         football.modelMatrix = Matrix4::Translate(0, 0, 1000) * footballRotate;
 
         // 球体旋转动画（放在正前方，保持在视锥体中心避免裁剪伪影）
-        Matrix4 sphereRotateY = Matrix4::RotateY(rotateAngle * 0.5f);
-        Matrix4 sphereRotateX = Matrix4::RotateX(rotateAngle * 0.3f);
-        sphere.modelMatrix = Matrix4::Translate(1000, 0, 0);
+        // Matrix4 sphereRotateY = Matrix4::RotateY(rotateAngle * 0.5f);
+        // Matrix4 sphereRotateX = Matrix4::RotateX(rotateAngle * 0.3f);
+        // sphere.modelMatrix = Matrix4::Translate(1000, 0, 0);
         // ========== 绘制 ==========
         render.Clear();
 
@@ -182,7 +182,19 @@ int main()
         // 足球
         render.Draw3DLines(football.getRenderEdges(camera.ViewM), WHITE);
 
-        render.Draw3DLines(sphere.getRenderEdges(camera.ViewM), WHITE);
+        // 立方体
+        render.Draw3DLines(cube.getRenderEdges(camera.ViewM), WHITE);
+
+        // 绘制立方体顶点名称
+        Matrix4 cubeMVP = camera.ViewM * cube.modelMatrix;
+        for (const auto& v : cube.localVertices) {
+            Vector3 tv = cubeMVP.MultiplyVector(v);
+            if (tv.z >= Render::NEAR_PLANE) {
+                Point p;
+                render.Project(tv, p);
+                render.DrawName(p, GOLD);
+            }
+        }
 
         // 显示摄像机坐标（实时变化）
         auto pos = camera.getPosition();

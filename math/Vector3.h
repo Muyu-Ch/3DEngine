@@ -8,8 +8,9 @@ class Vector3
 {
 public:
     float x,y,z,t;
+    char name;
 
-    Vector3(float X=0,float Y=0,float Z=0,float T=1);
+    Vector3(float X=0,float Y=0,float Z=0,float T=1,char name='.');
 
     Vector3 operator+(const Vector3& other)const;
     Vector3 operator-(const Vector3& other)const;
@@ -34,6 +35,8 @@ public:
     void print()const;
 
     void center(std::vector<Vector3>points);
+
+    void setName(char name);
 };
 
 

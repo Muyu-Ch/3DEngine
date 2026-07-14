@@ -129,6 +129,8 @@ public:
 
     // 等待退出（按ESC关闭窗口）
     void WaitQuit();
+
+    void DrawName(const Point& point, Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a = 255);
 };
 
 #endif

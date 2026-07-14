@@ -128,6 +128,7 @@ void Render::Project(const Vector3& point3d, Point& point2d)
             point2d.y = -10000;
         }
     }
+    point2d.name = point3d.name; // 保留顶点名称
 }
 
 bool Render::ClipSegmentToNearPlane(Vector3& v1, Vector3& v2)
@@ -532,4 +533,10 @@ void Render::WaitQuit()
         }
         SDL_Delay(10);
     }
+}
+
+void Render::DrawName(const Point& point, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+{
+    std::string nameStr(1, point.name); // 将字符转换为字符串
+    DrawText(nameStr.c_str(), point.x, point.y, r, g, b);
 }

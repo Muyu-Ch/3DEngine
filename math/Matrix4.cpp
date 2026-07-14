@@ -151,7 +151,7 @@ Vector3 Matrix4::MultiplyVector(const Vector3& vec) const
     float y=m[1][0]*vec.x+m[1][1]*vec.y+m[1][2]*vec.z+m[1][3];
     float z=m[2][0]*vec.x+m[2][1]*vec.y+m[2][2]*vec.z+m[2][3];
     float t=m[3][0]*vec.x+m[3][1]*vec.y+m[3][2]*vec.z+m[3][3];
-    Vector3 result(x,y,z,t);
+    Vector3 result(x, y, z, t, vec.name);
     return result;
 }
 

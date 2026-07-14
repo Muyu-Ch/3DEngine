@@ -8,11 +8,13 @@ Point::Point()
 {
     x=0;
     y=0;
+    this->name = '.';
 }
 
-Point::Point(int x, int y)
+Point::Point(int x, int y, char name)
 {
     this->x=x;
     this->y=y;
+    this->name=name;
 }
 

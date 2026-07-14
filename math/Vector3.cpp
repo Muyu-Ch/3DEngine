@@ -1,12 +1,13 @@
 #include "Vector3.h"
 #include<iostream>
 
-Vector3::Vector3(float X, float Y, float Z,float T)
+Vector3::Vector3(float X, float Y, float Z,float T,char name)
 {
     this->x = X;
     this->y = Y;
     this->z = Z;
     this->t = T;
+    this->name = name;
 }
 
 Vector3 Vector3::operator+(const Vector3& other) const
@@ -78,4 +79,9 @@ void Vector3::center(std::vector<Vector3>points)
     this->y=center.y;
     this->z=center.z;
     this->t=0;
+}
+
+void Vector3::setName(char name)
+{
+    this->name=name;
 }
